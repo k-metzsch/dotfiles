@@ -1,0 +1,114 @@
+// -*- mode: jsonc -*-
+{
+  "layer": "top",
+  "mode": "dock",
+  "position": "top",
+  "height": 30,
+  "width": "auto",
+  "spacing": 3,
+  "margin": 0,
+  "fixed-center": true,
+  "reload_style_on_change": true,
+
+  "modules-left": [
+    "hyprland/workspaces"
+  ],
+  "modules-center": [
+    "clock"
+  ],
+  "modules-right": [
+    "wireplumber",
+    "temperature",
+    "network",
+    "backlight",
+    "battery",
+    "tray"
+  ],
+  "hyprland/workspaces": {
+    "format": "{name}",
+    "sort-by-number": true,
+    "active-only": false,
+    "on-click": "hyprctl dispatch workspace {name}",
+    "on-scroll-up": "hyprctl dispatch workspace +1",
+    "on-scroll-down": "hyprctl dispatch workspace -1",
+
+    "persistent-workspaces": {
+      "*": ["1","2","3","4","5","6","7","8","9","10"]
+    },
+
+    "persistent_workspaces": {              // fallback for older Waybar
+      "*": ["1","2","3","4","5","6","7","8","9","10"]
+    }
+  },
+  "clock": {
+    "interval": 1,
+    "format": "{:%H:%M}",
+    "tooltip-format": "{:%Y-%m-%d}",
+    "calendar": {
+      "format": {
+        "today": "<span color='#ff5555'><b><u>{}</u></b></span>"
+      }
+    }
+  },
+  "wireplumber": {
+    "format": "{icon} {volume}%",
+    "format-muted": " {volume}%",
+    "format-icons": ["","",""],
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+    "on-scroll-up": "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
+    "tooltip-format": "Sink: {node_name}\nVol: {volume}%"
+  },
+  "temperature": {
+    "interval": 10,
+    "critical-threshold": 80,
+    "format": "{temperatureC}°C",
+    "tooltip": true
+  },
+  "network": {
+    "interval": 3,
+    "format-wifi": "{icon}",
+    "format-ethernet": "{ipaddr}/{cidr} ",
+    "tooltip-format": "{essid}\n{ifname} via {gwaddr}\n{ipaddr}/{cidr}",
+    "format-linked": "{ifname} (No IP) ",
+    "format-disconnected": "󰤭",
+    "format-alt": "{essid}",
+    "format-icons": [
+      "󰤯",
+      "󰤟",
+      "󰤢",
+      "󰤥",
+      "󰤨"
+    ]
+  },
+  "backlight": {
+    "format": "{icon}",
+    "tooltip-format": "{percent}%",
+    "format-icons": [
+      "󰌶","󱩎","󱩏","󱩐","󱩑",
+      "󱩒","󱩓","󱩔","󱩕","󱩖","󰛨"
+    ],
+    "on-scroll-up": "brightnessctl set +5%",
+    "on-scroll-down": "brightnessctl set 5%-"
+  },
+  "battery": {
+    "states": {
+        "good": 95,
+        "warning": 30,
+        "critical": 15
+    },
+    "format": "{icon}",
+    "format-full": "{icon}",
+    "format-charging": "{icon} ",
+    "format-plugged": "{icon} ",
+    "format-alt": "{icon}",
+    "format-icons": [
+        "",
+        "",
+        "",
+        "",
+        ""
+    ]
+  },
+}

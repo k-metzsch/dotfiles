@@ -1,0 +1,32 @@
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+if command -v starship >/dev/null 2>&1; then
+  if [ "$TERM" != "linux" ] && [ "$TERM" != "vt100" ]; then
+    eval "$(starship init bash)"
+  fi
+fi
+
+function y() {
+  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+  yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd <"$tmp"
+  [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+  rm -f -- "$tmp"
+}
+
+alias yazi='y'
+
+export FILE_MANAGER="yazi"
+export XDG_FILE_MANAGER="yazi"
+
+source /usr/share/fzf/key-bindings.bash
+source /usr/share/fzf/completion.bash
+
+[ -f ~/.config/lf/icons.env ] && . ~/.config/lf/icons.env
+
+# eval "$(zellij setup --generate-auto-start bash)"

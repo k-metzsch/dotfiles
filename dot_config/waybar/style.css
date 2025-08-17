@@ -1,0 +1,153 @@
+/* Waybar style (strict GTK3-safe subset) */
+
+/* ---------- Base ---------- */
+* {
+  border: none;
+  border-radius: 0;
+  font-family: JetBrainsMono NF ExtraBold, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 21px;
+  min-height: 0;
+}
+
+window#waybar {
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+}
+
+button {
+  margin: 3px;
+  padding: 3px;
+  background: transparent;
+}
+
+/* ---------- Tooltips ---------- */
+tooltip {
+  background: rgba(0, 0, 0, 0.20);
+  border: 4px solid white;
+  border-radius: 10px;
+}
+
+tooltip label {
+  color: white;
+  font-size: 15px;
+}
+
+/* ---------- Workspaces (numeric boxes) ---------- */
+#workspaces {
+  padding: 0 6px;
+}
+
+#workspaces button {
+  margin: 0 4px;
+  padding: 2px 0 0 0;       /* top padding to visually center */
+  min-width: 28px;          /* shape */
+  min-height: 28px;
+
+  font-weight: 600;
+  font-size: 14px;
+  color: #888888;
+
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+}
+
+#workspaces button:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.40);
+  color: #ffffff;
+}
+
+#workspaces button.active,
+#workspaces button.focused {
+  background: #5e81ac;
+  border-color: #5e81ac;
+  color: #ffffff;
+}
+
+#workspaces button.urgent {
+  background: #bf616a;
+  border-color: #bf616a;
+  color: #ffffff;
+  animation: wsBlink 0.8s steps(2) infinite;
+}
+
+@keyframes wsBlink {
+  0% { background: #bf616a; }
+  100% { background: #ff6f79; }
+}
+
+/* Small gap to next module */
+#workspaces + * {
+  margin-left: 6px;
+}
+
+/* ---------- Module Padding ---------- */
+#mode,
+#clock,
+#battery,
+#pulseaudio,
+#wireplumber,
+#temperature,
+#language,
+#backlight,
+#network,
+#tray,
+#custom-weather {
+  padding: 0 10px;
+}
+
+#scratchpad,
+#window {
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
+/* ---------- Weather States ---------- */
+#custom-weather.sunny        { color: rgb(215,215,0); }
+#custom-weather.lightrain    { color: lightblue; }
+#custom-weather.rain,
+#custom-weather.heavyrain    { color: blue; }
+#custom-weather.cloudy,
+#custom-weather.fog          { color: gray; }
+
+/* ---------- Module Accent Colors ---------- */
+#window       { color: darkred; }
+#language     { color: cadetblue; }
+#pulseaudio,
+#wireplumber  { color: darkcyan; }
+#network      { color: coral; }
+#temperature  { color: rgb(91,191,225); }
+#backlight    { color: rgb(255,255,61); }
+#clock        { color: aqua; }
+#battery      { color: rgb(147,63,225); }
+#battery.charging { color: #26A65B; }
+
+/* ---------- Alerts / Blink ---------- */
+@keyframes blink {
+  0% { color: #ff0000; }
+  100% { color: #ffffff; }
+}
+
+#battery.warning:not(.charging),
+#temperature.critical,
+#workspaces button.urgent,
+#mode {
+  color: #ff0000;
+  animation: blink 0.5s steps(2) infinite;
+}
+
+/* ---------- Muted Audio ---------- */
+#pulseaudio.muted,
+#wireplumber.muted {
+  color: #777777;
+}
+
+/* ---------- Optional Larger (HiDPI) ----------
+#workspaces button {
+  min-width: 32px;
+  min-height: 32px;
+  font-size: 15px;
+  padding-top: 3px;
+}
+*/
