@@ -1,18 +1,29 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-PLAYBOOK_DIR="${HOME}/.local/share/chezmoi/dot_bootstrap"
-PLAYBOOK="${PLAYBOOK_DIR}/setup.yml"
-
-if ! command -v python &>/dev/null; then
-  sudo pacman -S --needed --noconfirm python
+if ! command -v sudo >/dev/null 2>&1; then
+  echo "sudo not found. Install 'sudo' and add your user to wheel first." >&2
+  exit 1
 fi
 
-if ! command -v ansible-playbook &>/dev/null; then
-  sudo pacman -S --needed --noconfirm ansible
+if ! command -v pacman >/dev/null 2>&1; then
+  echo "pacman not found. This script is for Arch Linux (and derivatives)." >&2
+  exit 1
 fi
 
-if [ -f "${PLAYBOOK_DIR}/requirements.yml" ]; then
-  ansible-galaxy collection install -r "${PLAYBOOK_DIR}/requirements.yml"
+echo "[ansible-install] Refreshing package databases..."
+sudo pacman -Sy --noconfirm
+
+echo "[ansible-install] Installing/Updating Ansible..."
+sudo pacman -S --needed --noconfirm ansible
+
+echo "[ansible-install] Verifying installation..."
+if command -v ansible-playbook >/dev/null 2>&1; then
+  ansible --version | head -n 1
+  echo "[ansible-install] Done."
+else
+  echo "[ansible-install] ERROR: ansible-playbook not on PATH after install." >&2
+  exit 1
 fi
 
-ansible-playbook "${PLAYBOOK}" --ask-become-pass
+ansible-playbook ~/.bootstrap/setup.yml --ask-become-pass
