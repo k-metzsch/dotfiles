@@ -73,8 +73,13 @@
       - bison
       - iptables-nft
       - edk2-ovmf
+      - libusbmuxd
+      - usbmuxd
+      - avahi
+      - socat
     aur_packages:
       - yay-bin
+      - usbfluxd
       - bitwarden
       - nvidia-container-toolkit
     docker_daemon_config:
