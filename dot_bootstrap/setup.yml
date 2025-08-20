@@ -79,6 +79,8 @@
       - socat
     aur_packages:
       - yay-bin
+      - jdk-temurin
+      - flutter
       - usbfluxd
       - bitwarden
       - nvidia-container-toolkit
