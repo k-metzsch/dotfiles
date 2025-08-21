@@ -79,6 +79,9 @@
       - socat
       - wireguard-tools
       - monero
+      - grim
+      - slurp
+      - flameshot
     aur_packages:
       - yay-bin
       - jdk-temurin
