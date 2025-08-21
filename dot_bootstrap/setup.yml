@@ -77,6 +77,8 @@
       - usbmuxd
       - avahi
       - socat
+      - wireguard-tools
+      - monero
     aur_packages:
       - yay-bin
       - jdk-temurin
