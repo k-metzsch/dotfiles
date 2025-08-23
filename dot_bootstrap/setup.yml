@@ -63,6 +63,7 @@
       - nodejs
       - npm
       - chezmoi
+      - tmux
       - starship
       - qemu
       - libvirt

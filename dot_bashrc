@@ -1,7 +1,6 @@
 #
 # ~/.bashrc
 #
-
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
@@ -9,6 +8,10 @@ if command -v starship >/dev/null 2>&1; then
   if [ "$TERM" != "linux" ] && [ "$TERM" != "vt100" ]; then
     eval "$(starship init bash)"
   fi
+fi
+
+if command -v tmux >/dev/null 2>&1; then
+  [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ] && tmux
 fi
 
 function y() {
@@ -19,14 +22,17 @@ function y() {
   rm -f -- "$tmp"
 }
 
+alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}"'
 alias yazi='y'
+alias lg='lazygit'
 
 export FILE_MANAGER="yazi"
 export XDG_FILE_MANAGER="yazi"
+export TERM=xterm
+export PATH="$HOME/bin:$PATH"
 
 source /usr/share/fzf/key-bindings.bash
 source /usr/share/fzf/completion.bash
 
 [ -f ~/.config/lf/icons.env ] && . ~/.config/lf/icons.env
-
 # eval "$(zellij setup --generate-auto-start bash)"

@@ -1,0 +1,18 @@
+#!/bin/bash
+TMP_FILE="/tmp/flameshot-$(date +%s).png"
+CHOOSER_FILE="/tmp/yazi-chooser-$$"
+
+flameshot gui -p "$TMP_FILE"
+
+yazi --chooser-file "$CHOOSER_FILE"
+
+DEST_DIR=$(<"$CHOOSER_FILE")
+rm -f "$CHOOSER_FILE"
+
+if [[ -n "$DEST_DIR" && -f "$TMP_FILE" ]]; then
+  mv "$TMP_FILE" "$DEST_DIR/screenshot-$(date +%Y%m%d-%H%M%S).png"
+  notify-send "Screenshot saved to $DEST_DIR"
+else
+  notify-send "No destination chosen or screenshot failed."
+  rm -f "$TMP_FILE"
+fi

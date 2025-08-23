@@ -1,0 +1,17 @@
+#!/bin/bash
+
+SESSION="usbsetup"
+
+# Start new session, run first commands
+tmux new-session -d -s $SESSION "sudo systemctl start usbmuxd; sudo avahi-daemon"
+
+# Split window vertically for second command
+tmux split-window -v -t $SESSION "sudo socat tcp-listen:5000,fork unix-connect:/var/run/usbmuxd"
+
+# Split the first pane horizontally for third command
+tmux select-pane -t $SESSION:0.0
+tmux split-window -h -t $SESSION "sudo usbfluxd -f -n"
+
+# Attach to session
+tmux select-pane -t $SESSION:0.0
+tmux attach-session -t $SESSION

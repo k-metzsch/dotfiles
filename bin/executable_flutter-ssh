@@ -1,0 +1,16 @@
+#!/bin/bash
+
+REMOTE_USER="macos"
+REMOTE_HOST="localhost"
+REMOTE_ROOT="/Volumes/hostshare"
+REMOTE_PORT=50922
+
+LOCAL_DIR="$(pwd)"
+RELATIVE_DIR="${LOCAL_DIR#$REMOTE_ROOT/}"
+REMOTE_DIR="$REMOTE_ROOT/$RELATIVE_DIR"
+
+if [[ $1 == "run" ]]; then
+  ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "cd \"$REMOTE_DIR\" && flutter $*"
+else
+  ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "flutter $*"
+fi
