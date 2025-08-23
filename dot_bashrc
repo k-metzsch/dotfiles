@@ -10,8 +10,9 @@ if command -v starship >/dev/null 2>&1; then
   fi
 fi
 
-if command -v tmux >/dev/null 2>&1; then
-  [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ] && tmux
+# Only run if interactive shell
+if [[ $- == *i* ]]; then
+  ~/bin/tmux-launcher
 fi
 
 function y() {
@@ -35,4 +36,3 @@ source /usr/share/fzf/key-bindings.bash
 source /usr/share/fzf/completion.bash
 
 [ -f ~/.config/lf/icons.env ] && . ~/.config/lf/icons.env
-# eval "$(zellij setup --generate-auto-start bash)"

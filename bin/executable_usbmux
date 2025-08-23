@@ -1,17 +1,50 @@
 #!/bin/bash
 
-SESSION="usbsetup"
+SESSION="usbmux"
 
-# Start new session, run first commands
-tmux new-session -d -s $SESSION "sudo systemctl start usbmuxd; sudo avahi-daemon"
+# Error if already in tmux
+if [ -n "$TMUX" ]; then
+  echo "Error: You are already inside a tmux session. Please run this script from outside tmux."
+  exit 1
+fi
 
-# Split window vertically for second command
-tmux split-window -v -t $SESSION "sudo socat tcp-listen:5000,fork unix-connect:/var/run/usbmuxd"
+if tmux has-session -t "$SESSION" 2>/dev/null; then
+  # Session exists
+  read -p "Session '$SESSION' already exists. Attach to it? [y/N] " attach
+  if [[ "$attach" =~ ^[Yy]$ ]]; then
+    tmux attach-session -t "$SESSION"
+  else
+    echo "Session '$SESSION' is running in the background."
+  fi
+else
+  # Only clean up if no session exists
+  echo "Cleaning up (killing usbfluxd, socat, stopping usbmuxd)..."
+  sudo killall usbfluxd
+  sudo killall socat
+  sudo systemctl stop usbmuxd
 
-# Split the first pane horizontally for third command
-tmux select-pane -t $SESSION:0.0
-tmux split-window -h -t $SESSION "sudo usbfluxd -f -n"
+  echo "Cleaning up any lingering socat/usbfluxd processes or socket files..."
+  sudo killall -q socat usbfluxd || true
+  sudo rm -f /var/run/usbmuxd /var/run/usbmuxd.orig
 
-# Attach to session
-tmux select-pane -t $SESSION:0.0
-tmux attach-session -t $SESSION
+  # Check and start avahi-daemon if not running
+  if ! systemctl is-active --quiet avahi-daemon; then
+    echo "avahi-daemon is not running. Starting it now..."
+    sudo systemctl start avahi-daemon
+  fi
+
+  # Check and restart usbmuxd if not running
+  if ! systemctl is-active --quiet usbmuxd; then
+    echo "usbmuxd is not running. Restarting it now..."
+    sudo systemctl restart usbmuxd
+  fi
+
+  # Start tmux session in the background
+  CMD1="sudo socat tcp-listen:5000,fork unix-connect:/var/run/usbmuxd; bash"
+  CMD2="sudo usbfluxd -f -n; bash"
+
+  tmux new-session -d -s "$SESSION" "$CMD1"
+  tmux split-window -h -t "$SESSION:0.0" "$CMD2"
+  tmux select-pane -t "$SESSION:0.0"
+  echo "Session '$SESSION' started in the background."
+fi
