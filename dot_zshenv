@@ -1,0 +1,5 @@
+export _JAVA_OPTIONS="--enable-native-access=ALL-UNNAMED"
+export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+export ANDROID_SDK_ROOT=$ANDROID_HOME
+export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
+export PATH="/usr/local/bin:$PATH"

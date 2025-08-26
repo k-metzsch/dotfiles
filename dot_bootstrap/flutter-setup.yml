@@ -1,0 +1,59 @@
+---
+- hosts: localhost
+  become: false
+  gather_facts: yes
+
+  tasks:
+    - name: Update Android SDK Manager
+      shell: sdkmanager --update
+
+    - name: Accept Android license
+      shell: yes | sdkmanager --licenses
+
+    - name: Accept Xcode license
+      become: true
+      shell: xcodebuild -license accept
+
+    - name: Get latest build-tools major version for Android SDK
+      shell: |
+        sdkmanager --list | grep -o 'build-tools;[0-9]..0.0' | sort -V | tail -n1
+      register: latest_major_build_tools
+
+    - name: Get latest platform dependency for Android SDK
+      shell: |
+        sdkmanager --list | grep -o 'platforms;android-[0-9]\+' | sort -V | tail -n1
+      register: latest_platform
+
+    - name: Get latest sources dependency for Android SDK
+      shell: |
+        sdkmanager --list | grep -o 'sources;android-[0-9]\+' | sort -V | tail -n1
+      register: latest_sources
+
+    - name: Install platform-tools
+      shell: sdkmanager "platform-tools"
+
+    - name: Install latest build-tools via sdkmanager
+      shell: sdkmanager "{{ latest_major_build_tools.stdout }}"
+      when: latest_major_build_tools.stdout != ""
+
+    - name: Install latest platform via sdkmanager
+      shell: sdkmanager "{{ latest_platform.stdout }}"
+      when: latest_platform.stdout != ""
+
+    - name: Install latest sources via sdkmanager
+      shell: sdkmanager "{{ latest_sources.stdout }}"
+      when: latest_sources.stdout != ""
+
+    - name: Switch active Xcode developer directory
+      become: true
+      shell: xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+    - name: Run Xcode first launch setup
+      become: true
+      shell: xcodebuild -runFirstLaunch
+
+    - name: Accept Android licenses for Flutter
+      shell: yes | flutter doctor --android-licenses
+
+    - name: Run flutter doctor
+      shell: flutter doctor

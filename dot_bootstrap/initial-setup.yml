@@ -1,0 +1,78 @@
+
+---
+- hosts: localhost
+  become: false
+  gather_facts: yes
+  vars:
+    brew_packages:
+      - chezmoi
+      - temurin
+      - android-commandlinetools
+      - cocoapods
+      - flutter
+      - alacritty
+      - rustup
+      - node
+      - lazygit
+      - fzf
+      - mas
+      - docker
+      - docker-compose
+      - lazydocker
+      - koekeishiya/formulae/yabai
+      - koekeishiya/formulae/skhd
+    cask_packages:
+      - obsidian
+      - raycast
+      - alacritty
+      - font-0xproto-nerd-font
+
+  tasks:
+    - name: Ensure koekeishiya tap is added
+      shell: brew tap koekeishiya/formulae
+      args:
+        creates: /opt/homebrew/Library/Taps/koekeishiya/homebrew-formulae
+
+    - name: Install Homebrew packages
+      homebrew:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ brew_packages }}"
+
+    - name: Install Homebrew cask packages
+      homebrew_cask:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ cask_packages }}"
+
+    - name: Remove quarantine attribute from cask apps
+      become: true
+      shell: sudo xattr -d com.apple.quarantine /Applications/{{ item | title }}.app || true
+      loop: "{{ cask_packages }}"
+      ignore_errors: true
+
+    - name: Start yabai service
+      shell: yabai --start-service
+
+    - name: Start skhd service
+      shell: skhd --start-service
+
+    - name: Install Oh My Zsh
+      shell: |
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+    - name: Install Xcode
+      shell: |
+        if ! mas list | grep -i "Xcode"; then
+          mas install 497799835
+        fi
+      args:
+        executable: /bin/bash
+      when: mas_installed.rc == 0
+      register: xcode_install
+
+    - name: Add iCloud SSH key 'github' to ssh agent with keychain support
+      shell: ssh-add --apple-use-keychain ~/Library/Mobile\ Documents/com~apple~CloudDocs/.ssh/github
+      args:
+        creates: ~/Library/Mobile\ Documents/com~apple~CloudDocs/.ssh/github
+
