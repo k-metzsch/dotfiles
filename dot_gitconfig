@@ -1,3 +1,5 @@
 [user]
 	name = Kian
 	email = admin@ckm-tech.dev
+[core]
+	excludesfile = /Users/k-metzsch/.gitignore_global

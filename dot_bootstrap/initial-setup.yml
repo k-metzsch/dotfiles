@@ -13,6 +13,7 @@
       - alacritty
       - rustup
       - node
+      - neovim
       - lazygit
       - fzf
       - mas
@@ -23,7 +24,6 @@
       - koekeishiya/formulae/skhd
     cask_packages:
       - obsidian
-      - raycast
       - alacritty
       - font-0xproto-nerd-font
 
