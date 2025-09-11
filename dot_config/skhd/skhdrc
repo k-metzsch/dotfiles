@@ -13,8 +13,11 @@ cmd + alt - m : open -a Mail
 # Open Safari
 cmd + alt - s : open -a Safari
 
+# Open Visual Studio Code
+cmd + alt - v : open -a "Visual Studio Code"
+
 # Open new Finder window
-cmd + alt - n : open -a Finder
+cmd + alt - f : osascript -e "tell application \"Finder\" to make new Finder window to (POSIX file \"$(echo /Users/$USER)\")"
 
 # Command + [N]: Create space N if it doesn't exist, then focus it
 cmd - 1 : if ! yabai -m query --spaces | grep -q '"index":1'; then yabai -m space --create; fi; yabai -m space --focus 1

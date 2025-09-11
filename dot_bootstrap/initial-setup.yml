@@ -7,6 +7,7 @@
     brew_packages:
       - chezmoi
       - temurin
+      - pyenv
       - android-commandlinetools
       - cocoapods
       - flutter
@@ -16,16 +17,22 @@
       - neovim
       - lazygit
       - fzf
-      - mas
+      - yazi
       - docker
       - docker-compose
       - lazydocker
+      - mas
+      - tmux
       - koekeishiya/formulae/yabai
       - koekeishiya/formulae/skhd
     cask_packages:
       - obsidian
+      - gimp
+      - inkscape
       - alacritty
       - font-0xproto-nerd-font
+      - font-fira-code
+      - visual-studio-code
 
   tasks:
     - name: Ensure koekeishiya tap is added
