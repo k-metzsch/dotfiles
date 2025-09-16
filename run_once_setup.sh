@@ -79,4 +79,4 @@ if ! command -v ansible &>/dev/null; then
 fi
 
 ansible-playbook ~/.bootstrap/initial-setup.yml --ask-become-pass
-ansible-playbook ~/.bootstrap/flutter-setup.yml --ask-become-pass
+ansible-playbook ~/.bootstrap/dev-setup.yml --ask-become-pass

@@ -8,6 +8,7 @@ if ok_wk and wk.add then
     { "<leader>R", group = "Rust", icon = { icon = "", color = "orange" } }, -- Rust icon
     { "<leader>J", group = "JS/TS", icon = { icon = "󰛦", color = "yellow" } }, -- JS/TS (alt:  for JS, 󰛦 is TS)
     { "<leader>P", group = "Python", icon = { icon = "", color = "green" } }, -- Python icon
+    { "<leader>G", group = "Go", icon = { icon = "", color = "cyan" } }, -- Go icon
   })
 else
   -- Fallback (older which-key): still create groups (no icons)
@@ -17,6 +18,7 @@ else
       ["<leader>R"] = { name = "+Rust" },
       ["<leader>J"] = { name = "+JS/TS" },
       ["<leader>P"] = { name = "+Python" },
+      ["<leader>G"] = { name = "+Go" },
     })
   end
 end
@@ -163,6 +165,41 @@ map("n", "<leader>Rk", function()
     notify_missing("RustLsp")
   end
 end, "Rust: Hover Actions")
+
+-----------------------------------------------------------------------
+-- GO (<leader>G)
+-----------------------------------------------------------------------
+map("n", "<leader>Gb", function()
+  run_in_split("go build ./...", "go build")
+end, "Go: Build Project")
+map("n", "<leader>Gr", function()
+  -- Run current go file
+  local file = vim.fn.expand("%")
+  run_in_split("go run " .. vim.fn.fnameescape(file), "go run")
+end, "Go: Run File")
+map("n", "<leader>Gt", function()
+  run_in_split("go test ./...", "go test")
+end, "Go: Test Project")
+map("n", "<leader>GT", function()
+  -- Test current file
+  local file = vim.fn.expand("%")
+  run_in_split("go test " .. vim.fn.fnameescape(file), "go test file")
+end, "Go: Test File")
+map("n", "<leader>Gi", function()
+  run_in_split("go install ./...", "go install")
+end, "Go: Install Project")
+map("n", "<leader>Gm", function()
+  run_in_split("go mod tidy", "go mod tidy")
+end, "Go: Tidy Modules")
+map("n", "<leader>GF", format_buffer, "Go: Format")
+map("n", "<leader>Ga", fix_all, "Go: Fix All (LSP Organize Imports etc.)")
+map("n", "<leader>GV", function()
+  if has_command("GoVenv") then
+    vim.cmd("GoVenv")
+  else
+    notify_missing("GoVenv")
+  end
+end, "Go: Select Go Version")
 
 -----------------------------------------------------------------------
 -- JS / TS / React (<leader>J)

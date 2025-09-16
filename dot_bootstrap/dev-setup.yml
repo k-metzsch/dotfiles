@@ -4,6 +4,12 @@
   gather_facts: yes
 
   tasks:
+    - name: Go Language server install
+      shell: go install golang.org/x/tools/gopls@latest
+
+    - name: Initialize Rust with Rustup
+      shell: rustup-init
+
     - name: Update Android SDK Manager
       shell: sdkmanager --update
 
