@@ -8,7 +8,6 @@ if ok_wk and wk.add then
     { "<leader>R", group = "Rust", icon = { icon = "", color = "orange" } }, -- Rust icon
     { "<leader>J", group = "JS/TS", icon = { icon = "󰛦", color = "yellow" } }, -- JS/TS (alt:  for JS, 󰛦 is TS)
     { "<leader>P", group = "Python", icon = { icon = "", color = "green" } }, -- Python icon
-    { "<leader>D", group = "Debug", icon = { icon = "", color = "red" } }, -- Debug/bug icon (alt: )
   })
 else
   -- Fallback (older which-key): still create groups (no icons)
@@ -18,7 +17,6 @@ else
       ["<leader>R"] = { name = "+Rust" },
       ["<leader>J"] = { name = "+JS/TS" },
       ["<leader>P"] = { name = "+Python" },
-      ["<leader>D"] = { name = "+Debug" },
     })
   end
 end
@@ -116,6 +114,14 @@ map("n", "<leader>Ft", function()
   end
 end, "Flutter: Test Project")
 map("n", "<leader>Ff", format_buffer, "Flutter: Format")
+map("n", "<leader>FX", function()
+  local xcworkspace = vim.fn.glob("ios/*.xcworkspace")
+  if xcworkspace ~= "" then
+    vim.fn.system({ "open", xcworkspace })
+  else
+    notify_missing("iOS .xcworkspace file")
+  end
+end, "Flutter: Open Xcode Workspace")
 
 -----------------------------------------------------------------------
 -- RUST (<leader>R)
@@ -217,60 +223,3 @@ map("n", "<leader>PV", function()
     notify_missing("VenvSelect")
   end
 end, "Python: Select venv")
-
------------------------------------------------------------------------
--- DEBUG (<leader>D) (nvim-dap optional)
------------------------------------------------------------------------
-local function dap_call(fn)
-  local ok, dap = pcall(require, "dap")
-  if not ok then
-    return notify_missing("nvim-dap")
-  end
-  dap[fn]()
-end
-
-map("n", "<leader>Dc", function()
-  dap_call("continue")
-end, "Debug: Continue/Start")
-map("n", "<leader>Db", function()
-  local ok, dap = pcall(require, "dap")
-  if ok then
-    dap.toggle_breakpoint()
-  else
-    notify_missing("nvim-dap")
-  end
-end, "Debug: Toggle Breakpoint")
-map("n", "<leader>DB", function()
-  local ok, dap = pcall(require, "dap")
-  if not ok then
-    return notify_missing("nvim-dap")
-  end
-  vim.ui.input({ prompt = "Breakpoint condition: " }, function(cond)
-    if cond and #cond > 0 then
-      dap.set_breakpoint(cond)
-    end
-  end)
-end, "Debug: Conditional Breakpoint")
-map("n", "<leader>Do", function()
-  dap_call("step_over")
-end, "Debug: Step Over")
-map("n", "<leader>Di", function()
-  dap_call("step_into")
-end, "Debug: Step Into")
-map("n", "<leader>Du", function()
-  dap_call("step_out")
-end, "Debug: Step Out")
-map("n", "<leader>Dr", function()
-  dap_call("repl.open")
-end, "Debug: REPL")
-map("n", "<leader>Dl", function()
-  dap_call("run_last")
-end, "Debug: Run Last")
-map("n", "<leader>DT", function()
-  local ok, dapui = pcall(require, "dapui")
-  if ok then
-    dapui.toggle()
-  else
-    notify_missing("nvim-dap-ui")
-  end
-end, "Debug: Toggle UI")

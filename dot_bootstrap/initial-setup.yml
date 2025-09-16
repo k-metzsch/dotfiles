@@ -5,6 +5,7 @@
   vars:
     brew_packages:
       - chezmoi
+      - autin
       - temurin
       - pyenv
       - android-commandlinetools
@@ -16,13 +17,15 @@
       - neovim
       - lazygit
       - fzf
+      - atuin
+      - k9s
       - yazi
       - docker
       - docker-compose
       - lazydocker
       - colima
       - mas
-      - tmux
+      - zellij
       - koekeishiya/formulae/yabai
       - koekeishiya/formulae/skhd
     cask_packages:

@@ -52,6 +52,10 @@
       become: true
       shell: xcodebuild -runFirstLaunch
 
+    - name: Update rosetta
+      become: true
+      shell: softwareupdate --install-rosetta --agree-to-license
+
     - name: Accept Android licenses for Flutter
       shell: yes | flutter doctor --android-licenses
 

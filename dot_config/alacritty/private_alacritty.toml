@@ -17,6 +17,7 @@ style = "Regular"
 title = "Alacritty"
 decorations = "none"
 dynamic_title = false
+option_as_alt = "OnlyLeft"
 
 [colors.selection]
 text = "#1D2021"

@@ -10,11 +10,14 @@ cmd + alt - o : open -a Obsidian
 # Open Mail
 cmd + alt - m : open -a Mail
 
+# Open Gimp
+cmd + alt - g : open -a Gimp
+
+# Open Inkscape
+cmd + alt - i : open -a Inkscape
+
 # Open Safari
 cmd + alt - s : open -a Safari
-
-# Open Visual Studio Code
-cmd + alt - v : open -a "Visual Studio Code"
 
 # Open new Finder window
 cmd + alt - f : osascript -e "tell application \"Finder\" to make new Finder window to (POSIX file \"$(echo /Users/$USER)\")"

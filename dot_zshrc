@@ -36,11 +36,18 @@ function y() {
 	rm -f -- "$tmp"
 }
 
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init - zsh)"
+
 alias zshconfig="nvim ~/.zshrc"
 alias ohmyzsh="nvim ~/.oh-my-zsh"
 alias lg="lazygit"
 alias ld="lazydocker"
 alias yazi="y"
 
+if [[ "$TERM_PROGRAM" != "vscode" && -z "$NVIM" ]]; then
+  eval "$(zellij setup --generate-auto-start zsh)"
+fi
 
-[ -f ~/.tmux-prompt.sh ] && . ~/.tmux-prompt.sh
+eval "$(atuin init zsh)"
