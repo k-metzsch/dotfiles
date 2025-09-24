@@ -25,7 +25,7 @@ return {
   },
   -- Ensure tools are installed
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     opts = function(_, opts)
       opts = opts or {}
       opts.ensure_installed = opts.ensure_installed or {}

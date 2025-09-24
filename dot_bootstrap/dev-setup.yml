@@ -10,6 +10,9 @@
     - name: Initialize Rust with Rustup
       shell: rustup-init
 
+    - name: Setup laravel installer globally
+      shell: composer global require laravel/installer
+
     - name: Update Android SDK Manager
       shell: sdkmanager --update
 

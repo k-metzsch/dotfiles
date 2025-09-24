@@ -46,8 +46,5 @@ alias lg="lazygit"
 alias ld="lazydocker"
 alias yazi="y"
 
-if [[ "$TERM_PROGRAM" != "vscode" && -z "$NVIM" ]]; then
-  eval "$(zellij setup --generate-auto-start zsh)"
-fi
-
 eval "$(atuin init zsh)"
+export PATH="$PATH:/Users/k-metzsch/.composer/vendor/bin"

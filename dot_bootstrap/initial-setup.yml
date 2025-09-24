@@ -8,10 +8,12 @@
       - autin
       - temurin
       - pyenv
+      - php
+      - btop
+      - composer
       - android-commandlinetools
       - cocoapods
       - flutter
-      - alacritty
       - rustup
       - node
       - neovim
@@ -25,14 +27,19 @@
       - lazydocker
       - colima
       - mas
-      - zellij
+      - firebase-cli
       - koekeishiya/formulae/yabai
       - koekeishiya/formulae/skhd
     cask_packages:
+      - karabiner-elements
       - obsidian
+      - figma
+      - bettermouse
+      - devcleaner
       - gimp
       - inkscape
       - alacritty
+      - onlyoffice
       - font-0xproto-nerd-font
 
   tasks:

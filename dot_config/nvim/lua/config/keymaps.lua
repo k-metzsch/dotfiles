@@ -1,24 +1,24 @@
--- Global Language & Debug keymaps + which-key group icons
+vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { noremap = true, silent = true, desc = "Terminal: Exit to Normal mode" })
 
--- Safely add which-key groups with icons (requires which-key v3+)
 local ok_wk, wk = pcall(require, "which-key")
 if ok_wk and wk.add then
   wk.add({
     { "<leader>F", group = "Flutter", icon = { icon = "", color = "blue" } }, -- Flutter icon
     { "<leader>R", group = "Rust", icon = { icon = "", color = "orange" } }, -- Rust icon
-    { "<leader>J", group = "JS/TS", icon = { icon = "󰛦", color = "yellow" } }, -- JS/TS (alt:  for JS, 󰛦 is TS)
     { "<leader>P", group = "Python", icon = { icon = "", color = "green" } }, -- Python icon
     { "<leader>G", group = "Go", icon = { icon = "", color = "cyan" } }, -- Go icon
+    { "<leader>L", group = "Laravel", icon = { icon = "", color = "red" } }, -- Laravel icon
+    { "<leader>r", group = "React", icon = { icon = "", color = "blue" } }, -- React icon
   })
 else
-  -- Fallback (older which-key): still create groups (no icons)
   if ok_wk then
     wk.register({
       ["<leader>F"] = { name = "+Flutter" },
       ["<leader>R"] = { name = "+Rust" },
-      ["<leader>J"] = { name = "+JS/TS" },
       ["<leader>P"] = { name = "+Python" },
       ["<leader>G"] = { name = "+Go" },
+      ["<leader>L"] = { name = "+Laravel" },
+      ["<leader>r"] = { name = "+React" },
     })
   end
 end
@@ -55,6 +55,59 @@ local function fix_all()
     context = { only = { "source.fixAll", "source.organizeImports" } },
   })
 end
+
+-----------------------------------------------------------------------
+-- LARAVEL (<leader>L) - using adalessa/laravel.nvim
+-----------------------------------------------------------------------
+map("n", "<leader>Lv", function()
+  run_in_split("composer run dev", "composer run dev")
+end, "Laravel: Composer Dev")
+
+-----------------------------------------------------------------------
+-- REACT (<leader>r)
+-----------------------------------------------------------------------
+map("n", "<leader>rs", function()
+  run_in_split("npm start", "npm start")
+end, "React: Start Dev Server")
+map("n", "<leader>rt", function()
+  run_in_split("npm test", "npm test")
+end, "React: Run Tests")
+map("n", "<leader>rb", function()
+  run_in_split("npm run build", "npm build")
+end, "React: Build Project")
+map("n", "<leader>ri", function()
+  run_in_split("npm install", "npm install")
+end, "React: npm Install")
+map("n", "<leader>rF", format_buffer, "React: Format (Prettier)")
+map("n", "<leader>ra", fix_all, "React: Fix All (LSP)")
+map("n", "<leader>rc", function()
+  if has_command("TSToolsAddMissingImports") then
+    vim.cmd("TSToolsAddMissingImports")
+  else
+    notify_missing("TSTools")
+  end
+end, "React: Add Missing Imports")
+map("n", "<leader>ro", function()
+  if has_command("TSToolsOrganizeImports") then
+    vim.cmd("TSToolsOrganizeImports")
+  else
+    notify_missing("TSTools")
+  end
+end, "React: Organize Imports")
+map("n", "<leader>ru", function()
+  if has_command("TSToolsRemoveUnused") then
+    vim.cmd("TSToolsRemoveUnused")
+  else
+    notify_missing("TSTools")
+  end
+end, "React: Remove Unused Imports")
+map("n", "<leader>rr", function()
+  if has_command("TSToolsRenameFile") then
+    vim.cmd("TSToolsRenameFile")
+  else
+    notify_missing("TSTools")
+  end
+end, "React: Rename File")
 
 -----------------------------------------------------------------------
 -- FLUTTER (<leader>F)
@@ -173,7 +226,6 @@ map("n", "<leader>Gb", function()
   run_in_split("go build ./...", "go build")
 end, "Go: Build Project")
 map("n", "<leader>Gr", function()
-  -- Run current go file
   local file = vim.fn.expand("%")
   run_in_split("go run " .. vim.fn.fnameescape(file), "go run")
 end, "Go: Run File")
@@ -181,7 +233,6 @@ map("n", "<leader>Gt", function()
   run_in_split("go test ./...", "go test")
 end, "Go: Test Project")
 map("n", "<leader>GT", function()
-  -- Test current file
   local file = vim.fn.expand("%")
   run_in_split("go test " .. vim.fn.fnameescape(file), "go test file")
 end, "Go: Test File")
@@ -200,46 +251,6 @@ map("n", "<leader>GV", function()
     notify_missing("GoVenv")
   end
 end, "Go: Select Go Version")
-
------------------------------------------------------------------------
--- JS / TS / React (<leader>J)
------------------------------------------------------------------------
-map("n", "<leader>Jo", function()
-  if has_command("TSToolsOrganizeImports") then
-    vim.cmd("TSToolsOrganizeImports")
-  else
-    notify_missing("TSToolsOrganizeImports")
-  end
-end, "JS/TS: Organize Imports")
-map("n", "<leader>Jf", fix_all, "JS/TS: Fix All")
-map("n", "<leader>Jr", function()
-  if has_command("TSToolsRenameFile") then
-    vim.cmd("TSToolsRenameFile")
-  else
-    notify_missing("TSToolsRenameFile")
-  end
-end, "JS/TS: Rename File")
-map("n", "<leader>Ji", function()
-  if has_command("TSToolsAddMissingImports") then
-    vim.cmd("TSToolsAddMissingImports")
-  else
-    notify_missing("TSToolsAddMissingImports")
-  end
-end, "JS/TS: Add Missing Imports")
-map("n", "<leader>Jx", function()
-  if has_command("TSToolsRemoveUnused") then
-    vim.cmd("TSToolsRemoveUnused")
-  else
-    notify_missing("TSToolsRemoveUnused")
-  end
-end, "JS/TS: Remove Unused")
-map("n", "<leader>Jt", function()
-  run_in_split("npm test --silent", "npm test")
-end, "JS/TS: npm test")
-map("n", "<leader>Js", function()
-  run_in_split("npm run dev", "npm run dev")
-end, "JS/TS: Start Dev")
-map("n", "<leader>JF", format_buffer, "JS/TS: Format")
 
 -----------------------------------------------------------------------
 -- PYTHON (<leader>P)

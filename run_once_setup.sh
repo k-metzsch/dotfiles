@@ -15,22 +15,6 @@ if [[ $EUID -ne 0 ]]; then
   done 2>/dev/null &
 fi
 
-echo "Disabling Spotlight indexing"
-mdutil -i off -a || true
-
-if /usr/sbin/nvram boot-args >/dev/null 2>&1; then
-  CURRENT="$(/usr/sbin/nvram boot-args 2>/dev/null | sed -e $'s/boot-args\t//')"
-  CLEANED="$(echo "$CURRENT" | sed 's/serverperfmode=1//g' | tr -s ' ' | sed 's/^ *//;s/ *$//')"
-
-  if [[ "$CURRENT" != "$CLEANED" ]]; then
-    if [[ -z "$CLEANED" ]]; then
-      /usr/sbin/nvram -d boot-args
-    else
-      /usr/sbin/nvram boot-args="$CLEANED"
-    fi
-  fi
-fi
-
 defaults write com.apple.dock persistent-apps -array ""
 defaults write com.apple.dock autohide-delay -float 1000
 killall Dock
@@ -42,14 +26,14 @@ defaults write com.apple.Accessibility ReduceMotionEnabled -int 1
 defaults write com.apple.universalaccess reduceMotion -int 1
 defaults write com.apple.universalaccess reduceTransparency -int 1
 
-defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -bool false
-defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled -bool false
-defaults write /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall -int 0
-defaults write /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall -int 0
-defaults write /Library/Preferences/com.apple.SoftwareUpdate ScheduleFrequency -int 0
-defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -int 0
-defaults write /Library/Preferences/com.apple.commerce AutoUpdate -bool false
-defaults write /Library/Preferences/com.apple.commerce AutoUpdateRestartRequired -bool false
+# defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -bool false
+# defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled -bool false
+# defaults write /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall -int 0
+# defaults write /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall -int 0
+# defaults write /Library/Preferences/com.apple.SoftwareUpdate ScheduleFrequency -int 0
+# defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -int 0
+# defaults write /Library/Preferences/com.apple.commerce AutoUpdate -bool false
+# defaults write /Library/Preferences/com.apple.commerce AutoUpdateRestartRequired -bool false
 
 defaults write com.apple.universalaccessAuthWarning /System/Applications/Utilities/Terminal.app -bool true
 defaults write com.apple.universalaccessAuthWarning /usr/libexec -bool true
