@@ -22,18 +22,18 @@
       - atuin
       - k9s
       - yazi
-      - docker
       - docker-compose
       - lazydocker
-      - colima
       - mas
       - firebase-cli
       - koekeishiya/formulae/yabai
       - koekeishiya/formulae/skhd
     cask_packages:
+      - dbeaver-community
       - karabiner-elements
       - obsidian
       - figma
+      - docker
       - bettermouse
       - devcleaner
       - gimp

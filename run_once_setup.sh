@@ -26,14 +26,14 @@ defaults write com.apple.Accessibility ReduceMotionEnabled -int 1
 defaults write com.apple.universalaccess reduceMotion -int 1
 defaults write com.apple.universalaccess reduceTransparency -int 1
 
-# defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -bool false
-# defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled -bool false
-# defaults write /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall -int 0
-# defaults write /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall -int 0
-# defaults write /Library/Preferences/com.apple.SoftwareUpdate ScheduleFrequency -int 0
-# defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -int 0
-# defaults write /Library/Preferences/com.apple.commerce AutoUpdate -bool false
-# defaults write /Library/Preferences/com.apple.commerce AutoUpdateRestartRequired -bool false
+defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -bool false
+defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled -bool false
+defaults write /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall -int 0
+defaults write /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall -int 0
+defaults write /Library/Preferences/com.apple.SoftwareUpdate ScheduleFrequency -int 0
+defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -int 0
+defaults write /Library/Preferences/com.apple.commerce AutoUpdate -bool false
+defaults write /Library/Preferences/com.apple.commerce AutoUpdateRestartRequired -bool false
 
 defaults write com.apple.universalaccessAuthWarning /System/Applications/Utilities/Terminal.app -bool true
 defaults write com.apple.universalaccessAuthWarning /usr/libexec -bool true

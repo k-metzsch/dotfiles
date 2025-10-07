@@ -59,7 +59,7 @@ end
 -----------------------------------------------------------------------
 -- LARAVEL (<leader>L) - using adalessa/laravel.nvim
 -----------------------------------------------------------------------
-map("n", "<leader>Lv", function()
+map("n", "<leader>LR", function()
   run_in_split("composer run dev", "composer run dev")
 end, "Laravel: Composer Dev")
 
