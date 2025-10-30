@@ -1,51 +1,90 @@
 return {
-  -- Rust LSP UX
+  -----------------------------------------------------------------------------
+  -- Rust LSP and tooling integration
+  -----------------------------------------------------------------------------
   {
     "mrcjkb/rustaceanvim",
-    version = "^4",
+    version = "^4", -- Recommended pinning
     ft = { "rust" },
-    init = function()
-      vim.g.rustaceanvim = {
-        -- Configure rust-analyzer here if desired
-        server = {
-          settings = {
-            ["rust-analyzer"] = {
-              cargo = { allFeatures = true },
-              checkOnSave = { command = "clippy" },
+    opts = {
+      -- Plugin configuration
+      tools = {
+        hover_actions = {
+          auto_focus = true,
+        },
+      },
+      -- LSP configuration
+      server = {
+        on_attach = function(client, bufnr)
+          -- You can add custom keymaps here if needed
+        end,
+        settings = {
+          ["rust-analyzer"] = {
+            cargo = {
+              allFeatures = true,
+              loadOutDirsFromCheck = true,
+              buildScripts = {
+                enable = true,
+              },
+            },
+            checkOnSave = {
+              command = "clippy",
+            },
+            procMacro = {
+              enable = true,
             },
           },
         },
-      }
+      },
+      -- DAP configuration
+      dap = {
+        adapter = {
+          type = "executable",
+          command = "codelldb",
+          name = "rt_codelldb",
+        },
+      },
+    },
+    config = function(_, opts)
+      vim.g.rustaceanvim = opts
     end,
   },
-  -- Ensure rust tools are installed
+  -----------------------------------------------------------------------------
+  -- Mason (ensures tools are installed)
+  -----------------------------------------------------------------------------
   {
     "mason-org/mason.nvim",
     opts = function(_, opts)
       opts = opts or {}
       opts.ensure_installed = opts.ensure_installed or {}
       vim.list_extend(opts.ensure_installed, {
-        "rust-analyzer",
-        "codelldb", -- optional if you want DAP
+        "codelldb", -- Debugger for rustaceanvim
       })
+      return opts
     end,
   },
-  -- Treesitter for Rust
+  -----------------------------------------------------------------------------
+  -- Treesitter
+  -----------------------------------------------------------------------------
   {
     "nvim-treesitter/nvim-treesitter",
     opts = function(_, opts)
       opts = opts or {}
       opts.ensure_installed = opts.ensure_installed or {}
       vim.list_extend(opts.ensure_installed, { "rust", "toml" })
+      return opts
     end,
   },
-  -- Formatting for Rust
+  -----------------------------------------------------------------------------
+  -- Formatting
+  -----------------------------------------------------------------------------
   {
     "stevearc/conform.nvim",
     opts = function(_, opts)
       opts = opts or {}
       opts.formatters_by_ft = opts.formatters_by_ft or {}
       opts.formatters_by_ft.rust = { "rustfmt" }
+      return opts
     end,
   },
 }

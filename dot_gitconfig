@@ -3,3 +3,5 @@
 	email = admin@ckm-tech.dev
 [core]
 	excludesfile = /Users/k-metzsch/.gitignore_global
+[url "git@github.com:"]
+	insteadOf = https://github.com/

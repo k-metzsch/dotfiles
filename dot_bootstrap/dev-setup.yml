@@ -13,6 +13,9 @@
     - name: Setup laravel installer globally
       shell: composer global require laravel/installer
 
+    - name: Setup PHPactor globally
+      shell: composer global require phpactor/phpactor
+
     - name: Update Android SDK Manager
       shell: sdkmanager --update
 

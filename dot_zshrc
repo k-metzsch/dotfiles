@@ -36,6 +36,20 @@ function y() {
 	rm -f -- "$tmp"
 }
 
+function clg() {
+  local chezmoi_dir
+  chezmoi_dir=$(chezmoi source-path)
+
+  if [ -z "$chezmoi_dir" ] || [ ! -d "$chezmoi_dir" ]; then
+    echo "Error: Could not find chezmoi source directory." >&2
+    return 1
+  fi
+
+  (
+    cd "$chezmoi_dir" && lazygit
+  )
+}
+
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init - zsh)"

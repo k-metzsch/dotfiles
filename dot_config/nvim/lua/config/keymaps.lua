@@ -1,273 +1,238 @@
+-- General terminal mapping
 vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { noremap = true, silent = true, desc = "Terminal: Exit to Normal mode" })
 
-local ok_wk, wk = pcall(require, "which-key")
-if ok_wk and wk.add then
-  wk.add({
-    { "<leader>F", group = "Flutter", icon = { icon = "", color = "blue" } }, -- Flutter icon
-    { "<leader>R", group = "Rust", icon = { icon = "", color = "orange" } }, -- Rust icon
-    { "<leader>P", group = "Python", icon = { icon = "", color = "green" } }, -- Python icon
-    { "<leader>G", group = "Go", icon = { icon = "", color = "cyan" } }, -- Go icon
-    { "<leader>L", group = "Laravel", icon = { icon = "", color = "red" } }, -- Laravel icon
-    { "<leader>r", group = "React", icon = { icon = "", color = "blue" } }, -- React icon
-  })
-else
-  if ok_wk then
-    wk.register({
-      ["<leader>F"] = { name = "+Flutter" },
-      ["<leader>R"] = { name = "+Rust" },
-      ["<leader>P"] = { name = "+Python" },
-      ["<leader>G"] = { name = "+Go" },
-      ["<leader>L"] = { name = "+Laravel" },
-      ["<leader>r"] = { name = "+React" },
-    })
-  end
-end
-
+-- Helper for cleaner keymap definitions
 local function map(mode, lhs, rhs, desc)
   vim.keymap.set(mode, lhs, rhs, { silent = true, noremap = true, desc = desc })
 end
 
--- Helpers
-local function has_command(cmd)
-  return vim.fn.exists(":" .. cmd) == 2
-end
-local function notify_missing(what)
-  vim.notify(what .. " not available (missing tool/plugin)", vim.log.levels.WARN)
-end
-local function run_in_split(cmd, title)
+-- Helper to run commands in a terminal split
+local function term_run(cmd, title)
   title = title or cmd
-  vim.cmd("botright 15split")
-  vim.cmd("terminal " .. cmd)
+  vim.cmd("botright 12split | terminal " .. cmd)
   vim.cmd("file " .. title)
   vim.cmd("startinsert")
 end
-local function format_buffer()
-  local ok_conform, conform = pcall(require, "conform")
-  if ok_conform then
-    conform.format({ async = true, lsp_fallback = true })
-  else
-    vim.lsp.buf.format({ async = true })
-  end
+
+local function bg_run(cmd, title)
+  title = title or cmd
+  vim.fn.jobstart(cmd, {
+    stdout_buffered = true,
+    on_stdout = function(_, data)
+      if data and #data > 0 then
+        vim.notify(table.concat(data, "\n"), vim.log.levels.INFO, { title = title })
+      end
+    end,
+    on_exit = function(_, code)
+      if code ~= 0 then
+        vim.notify("Command exited with code: " .. code, vim.log.levels.WARN, { title = title })
+      end
+    end,
+  })
 end
-local function fix_all()
-  vim.lsp.buf.code_action({
-    apply = true,
-    context = { only = { "source.fixAll", "source.organizeImports" } },
+
+-- Helper for commands that need user input
+local function term_run_with_input(base_cmd, prompt_text, extra_args)
+  vim.ui.input({ prompt = prompt_text }, function(answer)
+    if answer and #answer > 0 then
+      local cmd = base_cmd .. " " .. answer
+      if extra_args then
+        cmd = cmd .. " " .. extra_args
+      end
+      bg_run(cmd, cmd)
+    end
+  end)
+end
+
+-- Universal format command
+map("n", "<leader>=", function()
+  require("conform").format({ async = true, lsp_fallback = true })
+end, "Format Document")
+
+-- Which-key setup for top-level groups
+local wk = require("which-key")
+wk.add({
+  { "<leader>d", group = "Debug", icon = "" },
+  { "<leader>L", group = "Laravel", icon = "" },
+  { "<leader>P", group = "Python", icon = "" },
+  { "<leader>F", group = "Flutter", icon = "" },
+  { "<leader>R", group = "Rust", icon = "" },
+  { "<leader>G", group = "Go", icon = "" },
+  { "<leader>p", desc = "Projects", icon = "" },
+})
+
+-- Dashboard project picker
+local alpha_ok, alpha = pcall(require, "alpha")
+if alpha_ok then
+  alpha.add_mapping("p", "<cmd>Telescope projects<cr>", {
+    desc = "Projects",
+    hl = "AlphaButtons",
+    keymap = { "n" },
   })
 end
 
 -----------------------------------------------------------------------
--- LARAVEL (<leader>L) - using adalessa/laravel.nvim
+-- DAP (DEBUG) KEYMAPS (<leader>d)
 -----------------------------------------------------------------------
-map("n", "<leader>LR", function()
-  run_in_split("composer run dev", "composer run dev")
-end, "Laravel: Composer Dev")
+map("n", "<leader>db", require("dap").toggle_breakpoint, "Debug: Toggle Breakpoint")
+map("n", "<leader>dc", require("dap").continue, "Debug: Continue")
+map("n", "<leader>di", require("dap").step_into, "Debug: Step Into")
+map("n", "<leader>do", require("dap").step_over, "Debug: Step Over")
+map("n", "<leader>dO", require("dap").step_out, "Debug: Step Out")
+map("n", "<leader>dr", require("dap").repl.open, "Debug: Open REPL")
+map("n", "<leader>dl", require("dap").run_last, "Debug: Run Last")
+map("n", "<leader>du", require("dapui").toggle, "Debug: Toggle UI")
+map("n", "<leader>dt", require("dap").terminate, "Debug: Terminate")
 
 -----------------------------------------------------------------------
--- REACT (<leader>r)
+-- LARAVEL (<leader>L)
 -----------------------------------------------------------------------
-map("n", "<leader>rs", function()
-  run_in_split("npm start", "npm start")
-end, "React: Start Dev Server")
-map("n", "<leader>rt", function()
-  run_in_split("npm test", "npm test")
-end, "React: Run Tests")
-map("n", "<leader>rb", function()
-  run_in_split("npm run build", "npm build")
-end, "React: Build Project")
-map("n", "<leader>ri", function()
-  run_in_split("npm install", "npm install")
-end, "React: npm Install")
-map("n", "<leader>rF", format_buffer, "React: Format (Prettier)")
-map("n", "<leader>ra", fix_all, "React: Fix All (LSP)")
-map("n", "<leader>rc", function()
-  if has_command("TSToolsAddMissingImports") then
-    vim.cmd("TSToolsAddMissingImports")
-  else
-    notify_missing("TSTools")
-  end
-end, "React: Add Missing Imports")
-map("n", "<leader>ro", function()
-  if has_command("TSToolsOrganizeImports") then
-    vim.cmd("TSToolsOrganizeImports")
-  else
-    notify_missing("TSTools")
-  end
-end, "React: Organize Imports")
-map("n", "<leader>ru", function()
-  if has_command("TSToolsRemoveUnused") then
-    vim.cmd("TSToolsRemoveUnused")
-  else
-    notify_missing("TSTools")
-  end
-end, "React: Remove Unused Imports")
-map("n", "<leader>rr", function()
-  if has_command("TSToolsRenameFile") then
-    vim.cmd("TSToolsRenameFile")
-  else
-    notify_missing("TSTools")
-  end
-end, "React: Rename File")
+local artisan = "php artisan "
+-- Removed: terminal-based Phpactor call. Native Phpactor mappings are in lang-laravel.lua.
 
------------------------------------------------------------------------
--- FLUTTER (<leader>F)
------------------------------------------------------------------------
-map("n", "<leader>Fr", function()
-  if has_command("FlutterRun") then
-    vim.cmd("FlutterRun")
-  else
-    notify_missing("FlutterRun")
-  end
-end, "Flutter: Run App")
-map("n", "<leader>FR", function()
-  if has_command("FlutterRestart") then
-    vim.cmd("FlutterRestart")
-  else
-    notify_missing("FlutterRestart")
-  end
-end, "Flutter: Restart App")
-map("n", "<leader>Fh", function()
-  if has_command("FlutterReload") then
-    vim.cmd("FlutterReload")
-  else
-    notify_missing("FlutterReload")
-  end
-end, "Flutter: Hot Reload")
-map("n", "<leader>Fd", function()
-  if has_command("FlutterDevices") then
-    vim.cmd("FlutterDevices")
-  else
-    notify_missing("FlutterDevices")
-  end
-end, "Flutter: Select Device")
-map("n", "<leader>Fe", function()
-  if has_command("FlutterEmulators") then
-    vim.cmd("FlutterEmulators")
-  else
-    notify_missing("FlutterEmulators")
-  end
-end, "Flutter: Select Emulator")
-map("n", "<leader>Fo", function()
-  if has_command("FlutterOutlineToggle") then
-    vim.cmd("FlutterOutlineToggle")
-  else
-    notify_missing("FlutterOutlineToggle")
-  end
-end, "Flutter: Toggle Outline")
-map("n", "<leader>Fq", function()
-  if has_command("FlutterQuit") then
-    vim.cmd("FlutterQuit")
-  else
-    notify_missing("FlutterQuit")
-  end
-end, "Flutter: Quit App")
-map("n", "<leader>Ft", function()
-  if has_command("FlutterRun") or has_command("FlutterReload") then
-    run_in_split("flutter test", "flutter test")
-  else
-    notify_missing("flutter tool")
-  end
-end, "Flutter: Test Project")
-map("n", "<leader>Ff", format_buffer, "Flutter: Format")
-map("n", "<leader>FX", function()
-  local xcworkspace = vim.fn.glob("ios/*.xcworkspace")
-  if xcworkspace ~= "" then
-    vim.fn.system({ "open", xcworkspace })
-  else
-    notify_missing("iOS .xcworkspace file")
-  end
-end, "Flutter: Open Xcode Workspace")
+map("n", "<leader>Lc", function()
+  bg_run("composer install", "Composer Install")
+end, "Composer Install")
+map("n", "<leader>LC", function()
+  term_run("composer run dev", "Composer Dev")
+end, "Composer Run Dev")
 
------------------------------------------------------------------------
--- RUST (<leader>R)
------------------------------------------------------------------------
-map("n", "<leader>Rb", function()
-  run_in_split("cargo build", "cargo build")
-end, "Rust: Cargo Build")
-map("n", "<leader>Rr", function()
-  run_in_split("cargo run", "cargo run")
-end, "Rust: Cargo Run")
-map("n", "<leader>Rt", function()
-  run_in_split("cargo test", "cargo test")
-end, "Rust: Cargo Test")
-map("n", "<leader>Rc", function()
-  run_in_split("cargo check", "cargo check")
-end, "Rust: Cargo Check")
-map("n", "<leader>Rl", function()
-  run_in_split("cargo clippy", "cargo clippy")
-end, "Rust: Cargo Clippy")
-map("n", "<leader>Rf", format_buffer, "Rust: Format")
-map("n", "<leader>Ra", function()
-  if has_command("RustLsp") then
-    vim.cmd("RustLsp codeAction")
-  else
-    notify_missing("RustLsp")
-  end
-end, "Rust: Code Action")
-map("n", "<leader>Rj", function()
-  if has_command("RustLsp") then
-    vim.cmd("RustLsp joinLines")
-  else
-    notify_missing("RustLsp")
-  end
-end, "Rust: Join Lines")
-map("n", "<leader>Rk", function()
-  if has_command("RustLsp") then
-    vim.cmd("RustLsp hover actions")
-  else
-    notify_missing("RustLsp")
-  end
-end, "Rust: Hover Actions")
+map("n", "<leader>Lt", function()
+  term_run(artisan .. "tinker")
+end, "Tinker")
+map("n", "<leader>LT", function()
+  term_run(artisan .. "test")
+end, "Run Tests")
 
------------------------------------------------------------------------
--- GO (<leader>G)
------------------------------------------------------------------------
-map("n", "<leader>Gb", function()
-  run_in_split("go build ./...", "go build")
-end, "Go: Build Project")
-map("n", "<leader>Gr", function()
-  local file = vim.fn.expand("%")
-  run_in_split("go run " .. vim.fn.fnameescape(file), "go run")
-end, "Go: Run File")
-map("n", "<leader>Gt", function()
-  run_in_split("go test ./...", "go test")
-end, "Go: Test Project")
-map("n", "<leader>GT", function()
-  local file = vim.fn.expand("%")
-  run_in_split("go test " .. vim.fn.fnameescape(file), "go test file")
-end, "Go: Test File")
-map("n", "<leader>Gi", function()
-  run_in_split("go install ./...", "go install")
-end, "Go: Install Project")
-map("n", "<leader>Gm", function()
-  run_in_split("go mod tidy", "go mod tidy")
-end, "Go: Tidy Modules")
-map("n", "<leader>GF", format_buffer, "Go: Format")
-map("n", "<leader>Ga", fix_all, "Go: Fix All (LSP Organize Imports etc.)")
-map("n", "<leader>GV", function()
-  if has_command("GoVenv") then
-    vim.cmd("GoVenv")
-  else
-    notify_missing("GoVenv")
-  end
-end, "Go: Select Go Version")
+-- Migrations and Seeding
+map("n", "<leader>Lm", function()
+  bg_run(artisan .. "migrate")
+end, "Migrate")
+map("n", "<leader>LM", function()
+  bg_run(artisan .. "migrate:fresh")
+end, "Migrate Fresh")
+map("n", "<leader>Lr", function()
+  bg_run(artisan .. "migrate:rollback")
+end, "Rollback")
+map("n", "<leader>LD", function()
+  bg_run(artisan .. "db:seed")
+end, "DB Seed")
+map("n", "<leader>LMS", function()
+  bg_run(artisan .. "migrate:fresh --seed")
+end, "Migrate Fresh + Seed")
+
+-- Cache and Config
+map("n", "<leader>Lo", function()
+  bg_run(artisan .. "optimize")
+end, "Optimize")
+map("n", "<leader>LO", function()
+  bg_run(artisan .. "optimize:clear")
+end, "Optimize Clear")
+map("n", "<leader>Lk", function()
+  bg_run(artisan .. "cache:clear")
+end, "Cache Clear")
+map("n", "<leader>Lg", function()
+  bg_run(artisan .. "config:clear")
+end, "Config Clear")
+map("n", "<leader>LG", function()
+  bg_run(artisan .. "config:cache")
+end, "Config Cache")
+
+-- Make commands
+map("n", "<leader>Lmm", function()
+  term_run_with_input(artisan .. "make:model", "Make Model:", "-m")
+end, "Make Model (+ mig)")
+map("n", "<leader>Lmc", function()
+  term_run_with_input(artisan .. "make:controller", "Make Controller:")
+end, "Make Controller")
+map("n", "<leader>Lmi", function()
+  term_run_with_input(artisan .. "make:migration", "Make Migration:")
+end, "Make Migration")
+
+-- IDE Helper
+map("n", "<leader>Lhg", function()
+  bg_run(artisan .. "ide-helper:generate", "IDE-Helper Generate")
+end, "IDE-Helper Generate")
+map("n", "<leader>Lhm", function()
+  bg_run(artisan .. "ide-helper:models --nowrite", "IDE-Helper Models")
+end, "IDE-Helper Models Write")
+map("n", "<leader)Lhf", function()
+  bg_run(artisan .. "ide-helper:meta", "IDE-Helper Meta")
+end, "IDE-Helper Meta")
 
 -----------------------------------------------------------------------
 -- PYTHON (<leader>P)
 -----------------------------------------------------------------------
+map("n", "<leader>PV", "<cmd>VenvSelect<cr>", "Select VirtualEnv")
+map("n", "<leader>Pv", "<cmd>VenvSelectCached<cr>", "Select Cached VirtualEnv")
+map("n", "<leader>Pc", function()
+  vim.ui.input({ prompt = "Venv name: " }, function(name)
+    if name then
+      bg_run("python -m venv " .. name, "Create Venv")
+    end
+  end)
+end, "Create VirtualEnv")
+map("n", "<leader>Pi", function()
+  vim.ui.input({ prompt = "Pip install: " }, function(pkg)
+    if pkg then
+      bg_run("pip install " .. pkg, "Pip Install")
+    end
+  end)
+end, "Pip Install")
 map("n", "<leader>Pr", function()
-  local file = vim.fn.expand("%")
-  run_in_split("python -u " .. vim.fn.fnameescape(file), "python run")
-end, "Python: Run File")
+  term_run("python -u " .. vim.fn.expand("%:p"), "Python Run")
+end, "Run File")
 map("n", "<leader>Pt", function()
-  local file = vim.fn.expand("%")
-  run_in_split("pytest -q " .. vim.fn.fnameescape(file), "pytest file")
-end, "Python: Test File")
-map("n", "<leader>PF", format_buffer, "Python: Format (isort+black)")
-map("n", "<leader>PV", function()
-  if has_command("VenvSelect") then
-    vim.cmd("VenvSelect")
+  term_run("pytest -v " .. vim.fn.expand("%:p"), "Pytest File")
+end, "Test File")
+
+-----------------------------------------------------------------------
+-- FLUTTER (<leader>F)
+-----------------------------------------------------------------------
+map("n", "<leader>Fr", "<cmd>FlutterRun<cr>", "Run App")
+map("n", "<leader>FR", "<cmd>FlutterRestart<cr>", "Hot Restart")
+map("n", "<leader>Fh", "<cmd>FlutterReload<cr>", "Hot Reload")
+map("n", "<leader>Fq", "<cmd>FlutterQuit<cr>", "Quit App")
+map("n", "<leader>Fd", "<cmd>FlutterDevices<cr>", "Select Device")
+map("n", "<leader>Fo", "<cmd>FlutterOutlineToggle<cr>", "Toggle Outline")
+map("n", "<leader>Fa", "<cmd>PubspecAssistAdd<cr>", "Add Dependency")
+map("n", "<leader>Fu", "<cmd>PubspecAssistUpdate<cr>", "Update Dependencies")
+map("n", "<leader>FX", function()
+  local xcworkspace = vim.fn.glob("ios/*.xcworkspace")
+  if xcworkspace ~= "" and vim.fn.filereadable(xcworkspace) == 1 then
+    vim.fn.system({ "open", xcworkspace })
+    vim.notify("Opening Xcode workspace...", vim.log.levels.INFO)
   else
-    notify_missing("VenvSelect")
+    vim.notify("No .xcworkspace found in ios/ directory", vim.log.levels.WARN)
   end
-end, "Python: Select venv")
+end, "Open Xcode Workspace")
+
+-----------------------------------------------------------------------
+-- RUST (<leader>R)
+-----------------------------------------------------------------------
+map("n", "<leader>Rr", "<cmd>RustLsp run<cr>", "Run")
+map("n", "<leader>Rt", "<cmd>RustLsp test<cr>", "Test")
+map("n", "<leader>Rb", "<cmd>RustLsp build<cr>", "Build")
+map("n", "<leader>Rd", "<cmd>RustLsp debug<cr>", "Debug")
+map("n", "<leader>Rc", function()
+  bg_run("cargo check", "Cargo Check")
+end, "Cargo Check")
+map("n", "<leader>Rl", function()
+  bg_run("cargo clippy", "Cargo Clippy")
+end, "Cargo Clippy")
+map("n", "<leader>Rk", "<cmd>RustLsp hover actions<cr>", "Hover Actions")
+map("n", "<leader>Ra", vim.lsp.buf.code_action, "Code Action")
+
+-----------------------------------------------------------------------
+-- GO (<leader>G)
+-----------------------------------------------------------------------
+map("n", "<leader>Gr", "<cmd>GoRun<cr>", "Run")
+map("n", "<leader>Gt", "<cmd>GoTest<cr>", "Test")
+map("n", "<leader>GT", "<cmd>GoTestFunc<cr>", "Test Function")
+map("n", "<leader>Gc", "<cmd>GoCoverage<cr>", "Test Coverage")
+map("n", "<leader>Gd", function()
+  require("dap").run({ type = "go", name = "Debug Test", request = "launch", mode = "test", program = "${fileDirname}" })
+end, "Debug Test")
+map("n", "<leader>Gm", "<cmd>GoModTidy<cr>", "Tidy Modules")
+map("n", "<leader>Gi", "<cmd>GoInstall<cr>", "Install")
+map("n", "<leader>Ge", "<cmd>GoAlternate<cr>", "Go to Test file")
