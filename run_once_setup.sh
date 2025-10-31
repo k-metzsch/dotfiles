@@ -41,12 +41,6 @@ defaults write com.apple.universalaccessAuthWarning /usr/libexec/sshd-keygen-wra
 defaults write com.apple.universalaccessAuthWarning com.apple.Messages -bool true
 defaults write com.apple.universalaccessAuthWarning com.apple.Terminal -bool true
 
-defaults write com.apple.loginwindow DisableScreenLock -bool true
-
-defaults write com.apple.loginwindow AllowList -string '*'
-
-defaults write com.apple.loginwindow TALLogoutSavesState -bool false
-
 if ! command -v brew &>/dev/null; then
   echo "Homebrew not found. Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
