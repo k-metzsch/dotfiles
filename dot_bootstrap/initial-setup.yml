@@ -1,7 +1,7 @@
----
 - hosts: localhost
   become: false
   gather_facts: yes
+
   vars:
     brew_packages:
       - chezmoi
@@ -40,6 +40,13 @@
       - onlyoffice
       - font-0xproto-nerd-font
 
+    ssh_key_path: "{{ ansible_env.HOME }}/Library/Mobile Documents/com~apple~CloudDocs/.ssh/id_ed25519"
+
+  vars_prompt:
+    - name: ssh_key_passphrase
+      prompt: "Enter passphrase for your SSH key (id_ed25519)"
+      private: yes
+
   tasks:
     - name: Ensure koekeishiya tap is added
       shell: brew tap koekeishiya/formulae
@@ -73,18 +80,111 @@
     - name: Install Oh My Zsh
       shell: |
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+      args:
+        creates: "{{ ansible_env.HOME }}/.oh-my-zsh"
+      environment:
+        RUNZSH: "no"
+        CHSH: "no"
 
     - name: Install Xcode
-      shell: |
-        if ! mas list | grep -i "Xcode"; then
-          mas install 497799835
-        fi
-      args:
-        executable: /bin/bash
-      when: mas_installed.rc == 0
-      register: xcode_install
+      shell: mas install 497799835
 
-    - name: Add iCloud SSH key 'github' to ssh agent with keychain support
-      shell: ssh-add --apple-use-keychain ~/Library/Mobile\ Documents/com~apple~CloudDocs/.ssh/github
+    # ----- SSH key + agent + keychain setup -----
+
+    - name: Ensure ~/.ssh directory exists
+      file:
+        path: "{{ ansible_env.HOME }}/.ssh"
+        state: directory
+        mode: "0700"
+
+    - name: Configure SSH to use macOS Keychain
+      blockinfile:
+        path: "{{ ansible_env.HOME }}/.ssh/config"
+        create: yes
+        mode: "0600"
+        block: |
+          Host *
+            AddKeysToAgent yes
+            UseKeychain yes
+            IdentityFile ~/Library/Mobile Documents/com~apple~CloudDocs/.ssh/id_ed25519
+
+    - name: Check that the SSH key file exists
+      stat:
+        path: "{{ ssh_key_path }}"
+      register: ssh_key_exists
+
+    - name: Get SSH_AUTH_SOCK from launchctl (macOS user agent)
+      command: launchctl getenv SSH_AUTH_SOCK
+      register: launchctl_auth_sock
+      changed_when: false
+      failed_when: false
+      when: ssh_key_exists.stat.exists
+
+    - name: Start a user ssh-agent if none is available
+      command: /usr/bin/ssh-agent -s
+      register: agent_start
+      changed_when: true
+      no_log: true
+      when:
+        - ssh_key_exists.stat.exists
+        - (launchctl_auth_sock.stdout | default('') | length) == 0
+
+    - name: Extract SSH_AUTH_SOCK from ssh-agent output
+      set_fact:
+        ssh_auth_sock: "{{ (agent_start.stdout | regex_search('SSH_AUTH_SOCK=([^;\\n]+);', '\\1')) | default('', true) }}"
+      no_log: true
+      when:
+        - ssh_key_exists.stat.exists
+        - (launchctl_auth_sock.stdout | default('') | length) == 0
+
+    - name: Select effective SSH_AUTH_SOCK
+      set_fact:
+        effective_ssh_auth_sock: >-
+          {{ (launchctl_auth_sock.stdout | default('') | trim)
+             if (launchctl_auth_sock.stdout | default('') | length) > 0
+             else (ssh_auth_sock | default('')) }}
+      no_log: true
+      when: ssh_key_exists.stat.exists
+
+    - name: Fail early if no SSH agent is available
+      fail:
+        msg: "No SSH agent available (SSH_AUTH_SOCK not set) and could not start one."
+      when:
+        - ssh_key_exists.stat.exists
+        - (effective_ssh_auth_sock | default('') | length) == 0
+
+    - name: Create temporary askpass helper
+      tempfile:
+        state: file
+        suffix: -askpass.sh
+      register: askpass_script
+      no_log: true
+      when: ssh_key_exists.stat.exists
+
+    - name: Write askpass script with provided passphrase
+      copy:
+        dest: "{{ askpass_script.path }}"
+        mode: "0700"
+        content: |
+          #!/bin/sh
+          echo "{{ ssh_key_passphrase }}"
+      no_log: true
+      when: ssh_key_exists.stat.exists
+
+    - name: Add iCloud SSH key to ssh-agent and store in Keychain (non-interactive)
+      command: /usr/bin/ssh-add --apple-use-keychain "{{ ssh_key_path }}"
+      environment:
+        SSH_AUTH_SOCK: "{{ effective_ssh_auth_sock }}"
+        SSH_ASKPASS: "{{ askpass_script.path }}"
+        SSH_ASKPASS_REQUIRE: "force"
       args:
-        creates: ~/Library/Mobile\ Documents/com~apple~CloudDocs/.ssh/github
+        chdir: "{{ ansible_env.HOME }}"
+      no_log: true
+      when: ssh_key_exists.stat.exists
+
+    - name: Remove temporary askpass helper
+      file:
+        path: "{{ askpass_script.path }}"
+        state: absent
+      no_log: true
+      when: ssh_key_exists.stat.exists

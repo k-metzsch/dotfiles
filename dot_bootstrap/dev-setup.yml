@@ -1,4 +1,3 @@
----
 - hosts: localhost
   become: false
   gather_facts: yes
@@ -7,14 +6,20 @@
     - name: Go Language server install
       shell: go install golang.org/x/tools/gopls@latest
 
-    - name: Initialize Rust with Rustup
-      shell: rustup-init
+    - name: Check if rustup is installed
+      shell: command -v rustup
+      register: rustup_installed
+      failed_when: false
+      changed_when: false
+
+    - name: Initialize Rust with Rustup (non-interactive, idempotent)
+      shell: rustup-init -y --no-modify-path
+      args:
+        creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
+      when: rustup_installed.rc != 0
 
     - name: Setup laravel installer globally
       shell: composer global require laravel/installer
-
-    - name: Setup PHPactor globally
-      shell: composer global require phpactor/phpactor
 
     - name: Update Android SDK Manager
       shell: sdkmanager --update
@@ -28,7 +33,7 @@
 
     - name: Get latest build-tools major version for Android SDK
       shell: |
-        sdkmanager --list | grep -o 'build-tools;[0-9]..0.0' | sort -V | tail -n1
+        sdkmanager --list | grep -o 'build-tools;[0-9]\+\.0\.0' | sort -V | tail -n1
       register: latest_major_build_tools
 
     - name: Get latest platform dependency for Android SDK
@@ -70,6 +75,3 @@
 
     - name: Accept Android licenses for Flutter
       shell: yes | flutter doctor --android-licenses
-
-    - name: Run flutter doctor
-      shell: flutter doctor

@@ -1,5 +1,0 @@
-Include /Users/k-metzsch/.colima/ssh_config
-
-Host github.com
-    AddKeysToAgent yes
-    IdentityFile "~/Library/Mobile Documents/com~apple~CloudDocs/.ssh/id_ed25519"
