@@ -1,4 +1,3 @@
--- lua/plugins/dap.lua
 return {
   -----------------------------------------------------------------------------
   -- DAP and UI
@@ -9,7 +8,6 @@ return {
       {
         "rcarriga/nvim-dap-ui",
         opts = function()
-          local dapui = require("dapui")
           return {
             icons = { expanded = "▾", collapsed = "▸", current_frame = "▸" },
             controls = {
@@ -84,7 +82,6 @@ return {
     },
     config = function()
       local dap = require("dap")
-      -- Codelldb
       dap.adapters.codelldb = {
         type = "server",
         port = "${port}",

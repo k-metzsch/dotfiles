@@ -46,12 +46,12 @@ shift + cmd - 8 : if ! yabai -m query --spaces | grep -q '"index":8'; then yabai
 shift + cmd - 9 : if ! yabai -m query --spaces | grep -q '"index":9'; then yabai -m space --create; fi; yabai -m window --space 9; yabai -m space --focus 9
 shift + cmd - 0 : if ! yabai -m query --spaces | grep -q '"index":10'; then yabai -m space --create; fi; yabai -m window --space 10; yabai -m space --focus 10
 
-cmd + shift - h : yabai -m window --focus west
-cmd + shift - l : yabai -m window --focus east
-cmd + shift - k : yabai -m window --focus north
-cmd + shift - j : yabai -m window --focus south
+ctrl + cmd - h : yabai -m window --focus west
+ctrl + cmd - l : yabai -m window --focus east
+ctrl + cmd - k : yabai -m window --focus north
+ctrl + cmd - j : yabai -m window --focus south
 
-ctrl + cmd - h : yabai -m window west --resize right:-20:0 2> /dev/null || yabai -m window --resize right:-20:0
-ctrl + cmd - j : yabai -m window north --resize bottom:0:20 2> /dev/null || yabai -m window --resize bottom:0:20
-ctrl + cmd - k : yabai -m window south --resize top:0:-20 2> /dev/null || yabai -m window --resize top:0:-20
-ctrl + cmd - l : yabai -m window east --resize left:20:0 2> /dev/null || yabai -m window --resize left:20:0
+cmd + shift - h : yabai -m window west --resize right:-20:0 2> /dev/null || yabai -m window --resize right:-20:0
+cmd + shift - j : yabai -m window north --resize bottom:0:20 2> /dev/null || yabai -m window --resize bottom:0:20
+cmd + shift - k : yabai -m window south --resize top:0:-20 2> /dev/null || yabai -m window --resize top:0:-20
+cmd + shift - l : yabai -m window east --resize left:20:0 2> /dev/null || yabai -m window --resize left:20:0

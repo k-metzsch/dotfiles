@@ -5,7 +5,7 @@
   vars:
     brew_packages:
       - chezmoi
-      - autin
+      - atuin
       - temurin
       - pyenv
       - php
@@ -20,7 +20,6 @@
       - lazygit
       - fzf
       - atuin
-      - k9s
       - yazi
       - docker-compose
       - lazydocker
@@ -64,13 +63,6 @@
       shell: sudo xattr -d com.apple.quarantine /Applications/{{ item | title }}.app || true
       loop: "{{ cask_packages }}"
       ignore_errors: true
-
-    - name: Start Colima (Docker-compatible daemon)
-      shell: colima start
-      args:
-        executable: /bin/bash
-      register: colima_started
-      changed_when: false
 
     - name: Start yabai service
       shell: yabai --start-service

@@ -4,20 +4,16 @@ return {
   -----------------------------------------------------------------------------
   {
     "mrcjkb/rustaceanvim",
-    version = "^4", -- Recommended pinning
+    version = "^4",
     ft = { "rust" },
     opts = {
-      -- Plugin configuration
       tools = {
         hover_actions = {
           auto_focus = true,
         },
       },
-      -- LSP configuration
       server = {
-        on_attach = function(client, bufnr)
-          -- You can add custom keymaps here if needed
-        end,
+        on_attach = function(client, bufnr) end,
         settings = {
           ["rust-analyzer"] = {
             cargo = {
@@ -36,7 +32,6 @@ return {
           },
         },
       },
-      -- DAP configuration
       dap = {
         adapter = {
           type = "executable",
