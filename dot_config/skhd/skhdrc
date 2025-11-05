@@ -1,28 +1,17 @@
-# Open Alacritty (new instance)
-cmd + alt - return : open -na Alacritty
+# SKHD configuration using Hyper (cmd+ctrl+alt+shift) produced by Karabiner from Right Command
+
+# Launchers (Super/Hyper layer via Right Command)
+hyper - m : open -a Mail
+
+hyper - s : open -a Safari
+
+hyper - f : osascript -e "tell application \"Finder\" to make new Finder window to (path to home folder)"
+
+hyper - return : open -na Alacritty
 
 # Open Alacritty in Finder's directory (only sets working directory if supported)
 cmd + alt + ctrl - return : sh -c 'DIR=$(osascript -e "tell application \"Finder\" to set thePath to POSIX path of (target of Finder window 1 as alias)"); /Applications/Alacritty.app/Contents/MacOS/alacritty --working-directory "$DIR"'
 
-# Open Obsidian
-cmd + alt - o : open -a Obsidian
-
-# Open Mail
-cmd + alt - m : open -a Mail
-
-# Open Gimp
-cmd + alt - g : open -a Gimp
-
-# Open Inkscape
-cmd + alt - i : open -a Inkscape
-
-# Open Safari
-cmd + alt - s : open -a Safari
-
-# Open new Finder window
-cmd + alt - f : osascript -e "tell application \"Finder\" to make new Finder window to (POSIX file \"$(echo /Users/$USER)\")"
-
-# Command + [N]: Create space N if it doesn't exist, then focus it
 cmd - 1 : if ! yabai -m query --spaces | grep -q '"index":1'; then yabai -m space --create; fi; yabai -m space --focus 1
 cmd - 2 : if ! yabai -m query --spaces | grep -q '"index":2'; then yabai -m space --create; fi; yabai -m space --focus 2
 cmd - 3 : if ! yabai -m query --spaces | grep -q '"index":3'; then yabai -m space --create; fi; yabai -m space --focus 3
@@ -34,17 +23,16 @@ cmd - 8 : if ! yabai -m query --spaces | grep -q '"index":8'; then yabai -m spac
 cmd - 9 : if ! yabai -m query --spaces | grep -q '"index":9'; then yabai -m space --create; fi; yabai -m space --focus 9
 cmd - 0 : if ! yabai -m query --spaces | grep -q '"index":10'; then yabai -m space --create; fi; yabai -m space --focus 10
 
-# Shift + Command + [N]: Create space N if it doesn't exist, then move window to it
-shift + cmd - 1 : if ! yabai -m query --spaces | grep -q '"index":1'; then yabai -m space --create; fi; yabai -m window --space 1; yabai -m space --focus 1
-shift + cmd - 2 : if ! yabai -m query --spaces | grep -q '"index":2'; then yabai -m space --create; fi; yabai -m window --space 2; yabai -m space --focus 2
-shift + cmd - 3 : if ! yabai -m query --spaces | grep -q '"index":3'; then yabai -m space --create; fi; yabai -m window --space 3; yabai -m space --focus 3
-shift + cmd - 4 : if ! yabai -m query --spaces | grep -q '"index":4'; then yabai -m space --create; fi; yabai -m window --space 4; yabai -m space --focus 4
-shift + cmd - 5 : if ! yabai -m query --spaces | grep -q '"index":5'; then yabai -m space --create; fi; yabai -m window --space 5; yabai -m space --focus 5
-shift + cmd - 6 : if ! yabai -m query --spaces | grep -q '"index":6'; then yabai -m space --create; fi; yabai -m window --space 6; yabai -m space --focus 6
-shift + cmd - 7 : if ! yabai -m query --spaces | grep -q '"index":7'; then yabai -m space --create; fi; yabai -m window --space 7; yabai -m space --focus 7
-shift + cmd - 8 : if ! yabai -m query --spaces | grep -q '"index":8'; then yabai -m space --create; fi; yabai -m window --space 8; yabai -m space --focus 8
-shift + cmd - 9 : if ! yabai -m query --spaces | grep -q '"index":9'; then yabai -m space --create; fi; yabai -m window --space 9; yabai -m space --focus 9
-shift + cmd - 0 : if ! yabai -m query --spaces | grep -q '"index":10'; then yabai -m space --create; fi; yabai -m window --space 10; yabai -m space --focus 10
+ctrl + cmd - 1 : if ! yabai -m query --spaces | grep -q '"index":1'; then yabai -m space --create; fi; yabai -m window --space 1; yabai -m space --focus 1
+ctrl + cmd - 2 : if ! yabai -m query --spaces | grep -q '"index":2'; then yabai -m space --create; fi; yabai -m window --space 2; yabai -m space --focus 2
+ctrl + cmd - 3 : if ! yabai -m query --spaces | grep -q '"index":3'; then yabai -m space --create; fi; yabai -m window --space 3; yabai -m space --focus 3
+ctrl + cmd - 4 : if ! yabai -m query --spaces | grep -q '"index":4'; then yabai -m space --create; fi; yabai -m window --space 4; yabai -m space --focus 4
+ctrl + cmd - 5 : if ! yabai -m query --spaces | grep -q '"index":5'; then yabai -m space --create; fi; yabai -m window --space 5; yabai -m space --focus 5
+ctrl + cmd - 6 : if ! yabai -m query --spaces | grep -q '"index":6'; then yabai -m space --create; fi; yabai -m window --space 6; yabai -m space --focus 6
+ctrl + cmd - 7 : if ! yabai -m query --spaces | grep -q '"index":7'; then yabai -m space --create; fi; yabai -m window --space 7; yabai -m space --focus 7
+ctrl + cmd - 8 : if ! yabai -m query --spaces | grep -q '"index":8'; then yabai -m space --create; fi; yabai -m window --space 8; yabai -m space --focus 8
+ctrl + cmd - 9 : if ! yabai -m query --spaces | grep -q '"index":9'; then yabai -m space --create; fi; yabai -m window --space 9; yabai -m space --focus 9
+ctrl + cmd - 0 : if ! yabai -m query --spaces | grep -q '"index":10'; then yabai -m space --create; fi; yabai -m window --space 10; yabai -m space --focus 10
 
 ctrl + cmd - h : yabai -m window --focus west
 ctrl + cmd - l : yabai -m window --focus east

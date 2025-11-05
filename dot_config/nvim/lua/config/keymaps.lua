@@ -6,14 +6,38 @@ local function map(mode, lhs, rhs, desc)
   vim.keymap.set(mode, lhs, rhs, { silent = true, noremap = true, desc = desc })
 end
 
--- Helper to run commands in a terminal split
+local Terminal = require("toggleterm.terminal").Terminal
+local my_term = nil
+
+-- Function to open the terminal
 local function term_run(cmd, title)
   title = title or cmd
-  vim.cmd("botright 12split | terminal " .. cmd)
-  vim.cmd("file " .. title)
-  vim.cmd("startinsert")
+  local win = vim.api.nvim_get_current_win()
+  if not my_term or not my_term:is_open() then
+    my_term = Terminal:new({
+      cmd = cmd,
+      direction = "horizontal",
+      size = 12,
+      name = title,
+      close_on_exit = true,
+    })
+  end
+  my_term:open()
+  vim.api.nvim_set_current_win(my_term.window)
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-\\><C-n>", true, false, true), "n", false)
+  vim.api.nvim_set_current_win(win)
 end
 
+-- Function to send Ctrl-C to the running job, then close the terminal
+local function term_close()
+  if my_term and my_term:is_open() then
+    pcall(function()
+      my_term:send("\003")
+    end)
+  end
+end
+
+-- Helper for commands that runs command in background an notifies
 local function bg_run(cmd, title)
   title = title or cmd
   vim.fn.jobstart(cmd, {
@@ -44,21 +68,36 @@ local function term_run_with_input(base_cmd, prompt_text, extra_args)
   end)
 end
 
--- Universal format command
-map("n", "<leader>=", function()
-  require("conform").format({ async = true, lsp_fallback = true })
-end, "Format Document")
-
 -- Which-key setup for top-level groups
 local wk = require("which-key")
 wk.add({
   { "<leader>d", group = "Debug", icon = "" },
   { "<leader>L", group = "Laravel", icon = "" },
+  { "<leader>Lh", group = "IDE-Helper", icon = "" },
   { "<leader>P", group = "Python", icon = "" },
   { "<leader>F", group = "Flutter", icon = "" },
   { "<leader>R", group = "Rust", icon = "" },
   { "<leader>G", group = "Go", icon = "" },
   { "<leader>p", desc = "Projects", icon = "" },
+})
+
+-- Show a close key only when a terminal is open
+map("n", "<leader>C", function()
+  if my_term and my_term:is_open() then
+    term_close()
+  else
+    vim.notify("No terminal open", vim.log.levels.WARN, { title = "Terminal" })
+  end
+end, "Terminal: Stop and Close")
+
+wk.add({
+  {
+    "<leader>X",
+    desc = "Terminal: Stop and Close",
+    cond = function()
+      return my_term and my_term:is_open()
+    end,
+  },
 })
 
 -- Dashboard project picker
@@ -88,15 +127,13 @@ map("n", "<leader>dt", require("dap").terminate, "Debug: Terminate")
 -- LARAVEL (<leader>L)
 -----------------------------------------------------------------------
 local artisan = "php artisan "
--- Removed: terminal-based Phpactor call. Native Phpactor mappings are in lang-laravel.lua.
 
 map("n", "<leader>Lc", function()
   bg_run("composer install", "Composer Install")
 end, "Composer Install")
-map("n", "<leader>LC", function()
+map("n", "<leader>LR", function()
   term_run("composer run dev", "Composer Dev")
 end, "Composer Run Dev")
-
 map("n", "<leader>Lt", function()
   term_run(artisan .. "tinker")
 end, "Tinker")
@@ -117,9 +154,15 @@ end, "Rollback")
 map("n", "<leader>LD", function()
   bg_run(artisan .. "db:seed")
 end, "DB Seed")
-map("n", "<leader>LMS", function()
+map("n", "<leader>Ls", function()
   bg_run(artisan .. "migrate:fresh --seed")
 end, "Migrate Fresh + Seed")
+map("n", "<leader>Lc", function()
+  term_run(artisan .. "route:clear")
+end, "Clear routes")
+map("n", "<leader>LC", function()
+  term_run(artisan .. "view:clear")
+end, "Clear views")
 
 -- Cache and Config
 map("n", "<leader>Lo", function()
@@ -138,27 +181,69 @@ map("n", "<leader>LG", function()
   bg_run(artisan .. "config:cache")
 end, "Config Cache")
 
--- Make commands
-map("n", "<leader>Lmm", function()
-  term_run_with_input(artisan .. "make:model", "Make Model:", "-m")
-end, "Make Model (+ mig)")
-map("n", "<leader>Lmc", function()
-  term_run_with_input(artisan .. "make:controller", "Make Controller:")
-end, "Make Controller")
-map("n", "<leader>Lmi", function()
-  term_run_with_input(artisan .. "make:migration", "Make Migration:")
-end, "Make Migration")
-
 -- IDE Helper
+map("n", "<leader>Lhi", function()
+  bg_run("composer require --dev barryvdh/laravel-ide-helper", "Composer Install IDE-Helper")
+end, "Composer Install")
 map("n", "<leader>Lhg", function()
-  bg_run(artisan .. "ide-helper:generate", "IDE-Helper Generate")
-end, "IDE-Helper Generate")
+  bg_run(artisan .. "ide-helper:generate")
+end, "Generate")
 map("n", "<leader>Lhm", function()
-  bg_run(artisan .. "ide-helper:models --nowrite", "IDE-Helper Models")
-end, "IDE-Helper Models Write")
-map("n", "<leader)Lhf", function()
-  bg_run(artisan .. "ide-helper:meta", "IDE-Helper Meta")
-end, "IDE-Helper Meta")
+  bg_run(artisan .. "ide-helper:models -RW")
+end, "Models")
+map("n", "<leader>Lhf", function()
+  bg_run(artisan .. "ide-helper:meta")
+end, "Meta")
+
+-----------------------------------------------------------------------
+-- LARAVEL MAKE ENHANCEMENTS (<leader>Lm)
+-----------------------------------------------------------------------
+local function artisan_make(cmd, prompt_text, extra_args)
+  term_run_with_input(artisan .. "make:" .. cmd, prompt_text or ("Make " .. cmd .. ":"), extra_args)
+end
+
+map("n", "<leader>Lm", function()
+  local items = {
+    { cmd = "model", label = "Model (-a: all artifacts)", extra = "-a" },
+    { cmd = "model", label = "Model (+migration)", extra = "-m" },
+    { cmd = "controller", label = "Controller", extra = nil },
+    { cmd = "controller", label = "Controller (resource)", extra = "--resource" },
+    { cmd = "controller", label = "Controller (invokable)", extra = "--invokable" },
+    { cmd = "controller", label = "Controller (API)", extra = "--api" },
+    { cmd = "migration", label = "Migration", extra = nil },
+    { cmd = "seeder", label = "Seeder", extra = nil },
+    { cmd = "factory", label = "Factory", extra = nil },
+    { cmd = "request", label = "Form Request", extra = nil },
+    { cmd = "resource", label = "API Resource", extra = nil },
+    { cmd = "middleware", label = "Middleware", extra = nil },
+    { cmd = "event", label = "Event", extra = nil },
+    { cmd = "listener", label = "Listener", extra = nil },
+    { cmd = "job", label = "Job", extra = nil },
+    { cmd = "mail", label = "Mailable", extra = nil },
+    { cmd = "notification", label = "Notification", extra = nil },
+    { cmd = "provider", label = "Service Provider", extra = nil },
+    { cmd = "cast", label = "Eloquent Cast", extra = nil },
+    { cmd = "channel", label = "Broadcast Channel", extra = nil },
+    { cmd = "component", label = "Blade Component", extra = nil },
+    { cmd = "command", label = "Artisan Console Command", extra = nil },
+    { cmd = "observer", label = "Observer", extra = nil },
+    { cmd = "test", label = "Test (Feature/Pest)", extra = nil },
+    { cmd = "test", label = "Test (Unit)", extra = "--unit" },
+    { cmd = "view", label = "View (Laravel 11+)", extra = nil },
+    { cmd = "scope", label = "Eloquent Scope (Laravel 11+)", extra = nil },
+  }
+  vim.ui.select(items, {
+    prompt = "Artisan make:",
+    format_item = function(item)
+      return item.label
+    end,
+  }, function(choice)
+    if not choice then
+      return
+    end
+    artisan_make(choice.cmd, choice.label .. " name:", choice.extra)
+  end)
+end, "Artisan Make")
 
 -----------------------------------------------------------------------
 -- PYTHON (<leader>P)
