@@ -76,6 +76,9 @@ wk.add({
   { "<leader>Lh", group = "IDE-Helper", icon = "" },
   { "<leader>P", group = "Python", icon = "" },
   { "<leader>F", group = "Flutter", icon = "" },
+  { "<leader>Fb", group = "Build", icon = "" },
+  { "<leader>Fp", group = "Pub", icon = "" },
+  { "<leader>Fl", group = "Log", icon = "" },
   { "<leader>R", group = "Rust", icon = "" },
   { "<leader>G", group = "Go", icon = "" },
   { "<leader>p", desc = "Projects", icon = "" },
@@ -158,11 +161,14 @@ map("n", "<leader>Ls", function()
   bg_run(artisan .. "migrate:fresh --seed")
 end, "Migrate Fresh + Seed")
 map("n", "<leader>Lc", function()
-  term_run(artisan .. "route:clear")
+  bg_run(artisan .. "route:clear")
 end, "Clear routes")
 map("n", "<leader>LC", function()
-  term_run(artisan .. "view:clear")
+  bg_run(artisan .. "view:clear")
 end, "Clear views")
+map("n", "<leader>Ll", function()
+  bg_run(artisan .. "route:list")
+end, "Route List")
 
 -- Cache and Config
 map("n", "<leader>Lo", function()
@@ -194,6 +200,14 @@ end, "Models")
 map("n", "<leader>Lhf", function()
   bg_run(artisan .. "ide-helper:meta")
 end, "Meta")
+
+-- Extra handy Laravel commands
+map("n", "<leader>LQw", function()
+  term_run(artisan .. "queue:work", "Queue Work")
+end, "Queue Work (interactive)")
+map("n", "<leader>LQr", function()
+  bg_run(artisan .. "queue:restart")
+end, "Queue Restart")
 
 -----------------------------------------------------------------------
 -- LARAVEL MAKE ENHANCEMENTS (<leader>Lm)
@@ -270,18 +284,90 @@ end, "Run File")
 map("n", "<leader>Pt", function()
   term_run("pytest -v " .. vim.fn.expand("%:p"), "Pytest File")
 end, "Test File")
+map("n", "<leader>Pm", function()
+  term_run_with_input("python -m", "Run module (python -m):")
+end, "Run Python Module")
 
 -----------------------------------------------------------------------
 -- FLUTTER (<leader>F)
 -----------------------------------------------------------------------
+-- Core run/reload/restart/session controls
 map("n", "<leader>Fr", "<cmd>FlutterRun<cr>", "Run App")
-map("n", "<leader>FR", "<cmd>FlutterRestart<cr>", "Hot Restart")
+map("n", "<leader>Fd", "<cmd>FlutterDebug<cr>", "Run in Debug Mode")
 map("n", "<leader>Fh", "<cmd>FlutterReload<cr>", "Hot Reload")
+map("n", "<leader>FR", "<cmd>FlutterRestart<cr>", "Hot Restart")
 map("n", "<leader>Fq", "<cmd>FlutterQuit<cr>", "Quit App")
-map("n", "<leader>Fd", "<cmd>FlutterDevices<cr>", "Select Device")
+map("n", "<leader>FA", "<cmd>FlutterAttach<cr>", "Attach to App")
+map("n", "<leader>FD", "<cmd>FlutterDetach<cr>", "Detach (keep running)")
+
+-- Devices / Emulators
+map("n", "<leader>Fs", "<cmd>FlutterDevices<cr>", "Select Device")
+map("n", "<leader>Fe", "<cmd>FlutterEmulators<cr>", "Select Emulator")
+
+-- Outline
 map("n", "<leader>Fo", "<cmd>FlutterOutlineToggle<cr>", "Toggle Outline")
-map("n", "<leader>Fa", "<cmd>PubspecAssistAdd<cr>", "Add Dependency")
-map("n", "<leader>Fu", "<cmd>PubspecAssistUpdate<cr>", "Update Dependencies")
+map("n", "<leader>FO", "<cmd>FlutterOutlineOpen<cr>", "Open Outline")
+
+-- DevTools
+map("n", "<leader>Fv", "<cmd>FlutterDevTools<cr>", "Start DevTools Server")
+map("n", "<leader>FV", "<cmd>FlutterDevToolsActivate<cr>", "Activate DevTools")
+map("n", "<leader>FP", "<cmd>FlutterCopyProfilerUrl<cr>", "Copy Profiler URL")
+
+-- LSP helpers
+map("n", "<leader>FL", "<cmd>FlutterLspRestart<cr>", "LSP Restart (Dart)")
+map("n", "<leader>FS", "<cmd>FlutterSuper<cr>", "Go To Super")
+map("n", "<leader>FN", "<cmd>FlutterReanalyze<cr>", "Reanalyze Project")
+map("n", "<leader>Fz", "<cmd>FlutterRename<cr>", "Flutter Rename (updates imports)")
+
+-- Logs
+map("n", "<leader>Flc", "<cmd>FlutterLogClear<cr>", "Log: Clear")
+map("n", "<leader>Flt", "<cmd>FlutterLogToggle<cr>", "Log: Toggle")
+
+map("n", "<leader>Fc", function()
+  bg_run("flutter clean", "flutter clean")
+end, "flutter clean")
+map("n", "<leader>Fg", function()
+  term_run("flutter gen-l10n", "flutter gen-l10n")
+end, "flutter gen-l10n")
+
+-- Pubspec
+map("n", "<leader>Fpg", function()
+  bg_run("flutter pub get", "flutter pub get")
+end, "flutter pub get")
+map("n", "<leader>Fpu", function()
+  bg_run("flutter pub upgrade", "flutter pub upgrade")
+end, "flutter pub upgrade")
+map("n", "<leader>Fpu", function()
+  bg_run("flutter pub upgrade", "flutter pub upgrade --major-versions")
+end, "flutter pub upgrade Major")
+map("n", "<leader>Fpo", function()
+  term_run("flutter pub outdated", "flutter pub outdated")
+end, "flutter pub outdated")
+
+-- Build
+map("n", "<leader>Fba", function()
+  term_run("flutter build apk", "flutter build apk")
+end, "Build APK (release)")
+map("n", "<leader>Fbb", function()
+  term_run("flutter build appbundle", "flutter build appbundle")
+end, "Build AppBundle (AAB)")
+map("n", "<leader>Fbi", function()
+  term_run("flutter build ios", "flutter build ios")
+end, "Build iOS")
+map("n", "<leader>Fbp", function()
+  term_run("flutter build ipa", "flutter build ipa")
+end, "Build IPA")
+
+map("n", "<leader>Fy", function()
+  term_run("flutter analyze", "flutter analyze")
+end, "Flutter Analyze")
+map("n", "<leader>Ff", function()
+  bg_run("dart format .", "dart format .")
+end, "Dart Format (project)")
+map("n", "<leader>Ff", function()
+  bg_run("dart run flutter_native_splash:create", "create splash")
+end, "Dart create Splash screen")
+
 map("n", "<leader>FX", function()
   local xcworkspace = vim.fn.glob("ios/*.xcworkspace")
   if xcworkspace ~= "" and vim.fn.filereadable(xcworkspace) == 1 then
@@ -299,14 +385,29 @@ map("n", "<leader>Rr", "<cmd>RustLsp run<cr>", "Run")
 map("n", "<leader>Rt", "<cmd>RustLsp test<cr>", "Test")
 map("n", "<leader>Rb", "<cmd>RustLsp build<cr>", "Build")
 map("n", "<leader>Rd", "<cmd>RustLsp debug<cr>", "Debug")
+map("n", "<leader>Rk", "<cmd>RustLsp hover actions<cr>", "Hover Actions")
+
 map("n", "<leader>Rc", function()
   bg_run("cargo check", "Cargo Check")
 end, "Cargo Check")
 map("n", "<leader>Rl", function()
   bg_run("cargo clippy", "Cargo Clippy")
 end, "Cargo Clippy")
-map("n", "<leader>Rk", "<cmd>RustLsp hover actions<cr>", "Hover Actions")
-map("n", "<leader>Ra", vim.lsp.buf.code_action, "Code Action")
+map("n", "<leader>RF", function()
+  bg_run("cargo fmt", "Cargo Format")
+end, "Cargo Format")
+map("n", "<leader>RO", function()
+  term_run("cargo doc --open", "Cargo Doc")
+end, "Cargo Doc --open")
+map("n", "<leader>RR", function()
+  term_run("cargo run --release", "Cargo Run (release)")
+end, "Cargo Run Release")
+map("n", "<leader>RT", function()
+  term_run("cargo test", "Cargo Test")
+end, "Cargo Test")
+map("n", "<leader>RB", function()
+  term_run("cargo bench", "Cargo Bench")
+end, "Cargo Bench")
 
 -----------------------------------------------------------------------
 -- GO (<leader>G)
@@ -321,3 +422,13 @@ end, "Debug Test")
 map("n", "<leader>Gm", "<cmd>GoModTidy<cr>", "Tidy Modules")
 map("n", "<leader>Gi", "<cmd>GoInstall<cr>", "Install")
 map("n", "<leader>Ge", "<cmd>GoAlternate<cr>", "Go to Test file")
+map("n", "<leader>Gb", "<cmd>GoBuild<cr>", "Build")
+map("n", "<leader>Gv", "<cmd>GoVet<cr>", "Vet")
+map("n", "<leader>Gf", "<cmd>GoFmt<cr>", "Format")
+map("n", "<leader>Gg", "<cmd>GoGenerate<cr>", "Generate")
+map("n", "<leader>GI", "<cmd>GoImpl<cr>", "Implement Interface")
+map("n", "<leader>GA", "<cmd>GoAddTag<cr>", "Add Struct Tags")
+map("n", "<leader>GR", "<cmd>GoRmTag<cr>", "Remove Struct Tags")
+map("n", "<leader>GE", "<cmd>GoIfErr<cr>", "Insert if err")
+map("n", "<leader>GF", "<cmd>GoFillStruct<cr>", "Fill Struct")
+map("n", "<leader>GK", "<cmd>GoDoc<cr>", "Show Doc")

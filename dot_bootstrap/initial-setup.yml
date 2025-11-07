@@ -19,6 +19,9 @@
       - neovim
       - lazygit
       - fzf
+      - bat
+      - ripgrep
+      - fd
       - atuin
       - yazi
       - docker-compose

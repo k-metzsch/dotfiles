@@ -38,7 +38,6 @@ return {
     "mason-org/mason.nvim",
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
-      -- blade_formatter is a formatter, not an LSP, so it belongs here.
       vim.list_extend(opts.ensure_installed, { "blade-formatter" })
       return opts
     end,
@@ -74,18 +73,6 @@ return {
         },
       },
     },
-  },
-
-  -----------------------------------------------------------------------------
-  -- Phpactor
-  -----------------------------------------------------------------------------
-  {
-    "gbprod/phpactor.nvim",
-    ft = "php",
-    opts = {},
-    config = function(_, opts)
-      require("phpactor").setup(opts)
-    end,
   },
 
   -----------------------------------------------------------------------------

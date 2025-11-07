@@ -63,10 +63,31 @@ alias yazi="y"
 # alias - end
 #########################################
 
+export FZF_DEFAULT_OPTS="
+  --height=80%
+  --layout=reverse
+  --border
+  --ansi
+  --info=inline
+  --preview='
+    if [ -d {} ]; then
+      (ls -la --color=always {} 2>/dev/null || ls -la {})
+    else
+      bat --style=numbers --color=always --line-range=:500 {} 2>/dev/null || file -b {}
+    fi
+  '
+  --preview-window=right:55%
+  --bind='ctrl-/:toggle-preview'
+  --bind='f3:toggle-preview'
+  --bind='ctrl-d:half-page-down,ctrl-u:half-page-up'
+  --bind='ctrl-y:preview-up,ctrl-e:preview-down'
+"
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init - zsh)"
+
 eval "$(atuin init zsh)"
+
 export PATH="$PATH:/Users/k-metzsch/.composer/vendor/bin"
 
 # The following lines have been added by Docker Desktop to enable Docker CLI completions.
