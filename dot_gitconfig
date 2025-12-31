@@ -1,7 +1,12 @@
 [user]
 	name = Kian Metzsch
-	email = admin@ckm-tech.dev
+	email = contact@ckm-tech.dev
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILoiUEbdD1YmlE64Q3jFFzM+oRRB6EjEvU+DHxKzvtJU
 [core]
 	excludesfile = /Users/k-metzsch/.gitignore_global
 [url "git@github.com:"]
 	insteadOf = https://github.com/
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true

@@ -132,8 +132,8 @@ defaults write com.apple.dock mru-spaces -bool false
 # Screenshots
 ################################################################################
 
-mkdir -p "${HOME}/Screenshots"
-defaults write com.apple.screencapture location -string "${HOME}/Screenshots"
+mkdir -p "${HOME}/screenshots"
+defaults write com.apple.screencapture location -string "${HOME}/screenshots"
 defaults write com.apple.screencapture type -string "png"
 
 ################################################################################

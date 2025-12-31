@@ -43,6 +43,22 @@ return {
   },
 
   -----------------------------------------------------------------------------
+  -- Flutter Bloc Plugin
+  -----------------------------------------------------------------------------
+  {
+    "wa11breaker/flutter-bloc.nvim",
+    dependencies = {
+      "nvimtools/none-ls.nvim",
+      "nvim-telescope/telescope.nvim",
+    },
+    opts = {
+      bloc_type = "equatable", -- Choose from: 'default', 'equatable', 'freezed'
+      use_sealed_classes = false,
+      enable_code_actions = true,
+    },
+  },
+
+  -----------------------------------------------------------------------------
   -- Pubspec Dependency Helper
   -----------------------------------------------------------------------------
   {

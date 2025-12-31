@@ -7,7 +7,6 @@
       - chezmoi
       - atuin
       - temurin
-      - pyenv
       - php
       - btop
       - composer
@@ -17,43 +16,40 @@
       - rustup
       - node
       - neovim
-      - lazygit
-      - fzf
-      - bat
-      - ripgrep
-      - fd
       - atuin
       - yazi
-      - docker-compose
-      - lazydocker
+      - fzf
+      - lazygit
+      - fd
       - mas
-      - firebase-cli
+      - podman
+      - podman-compose
       - koekeishiya/formulae/yabai
       - koekeishiya/formulae/skhd
     cask_packages:
       - dbeaver-community
+      - keymapp
       - karabiner-elements
+      - podman-desktop
       - obsidian
-      - figma
-      - docker
+      - firefox
+      - bitwarden
+      - raycast
       - devcleaner
+      - parallels
       - gimp
       - inkscape
-      - alacritty
-      - onlyoffice
+      - kitty
+      - libreoffice
       - font-0xproto-nerd-font
     ssh_key_path: "{{ ansible_env.HOME }}/Library/Mobile Documents/com~apple~CloudDocs/.ssh/id_ed25519"
-
-  vars_prompt:
-    - name: ssh_key_passphrase
-      prompt: "Enter passphrase for your SSH key"
-      private: yes
 
   tasks:
     - name: Ensure koekeishiya tap is added
       shell: brew tap koekeishiya/formulae
-      args:
-        creates: /opt/homebrew/Library/Taps/koekeishiya/homebrew-formulae
+
+    - name: Ensure slp tap is added
+      shell: brew tap slp/krunkit
 
     - name: Install Homebrew packages
       homebrew:
@@ -90,59 +86,12 @@
 
     - name: Install Xcode
       shell: mas install 497799835
+      environment:
+        RUNZSH: "no"
+        CHSH: "no"
 
-    - name: Check that the SSH key file exists
-      stat:
-        path: "{{ ssh_key_path }}"
-      register: ssh_key_exists
-
-    - name: Create temporary askpass helper
-      tempfile:
-        state: file
-        suffix: -askpass.sh
-      register: askpass_script
-      no_log: true
-      when: ssh_key_exists.stat.exists
-
-    - name: Write askpass script with provided passphrase
-      copy:
-        dest: "{{ askpass_script.path }}"
-        mode: "0700"
-        content: |
-          #!/bin/sh
-          echo "{{ ssh_key_passphrase }}"
-      no_log: true
-      when: ssh_key_exists.stat.exists
-
-    - name: Add iCloud SSH key to ssh-agent (no keychain)
-      shell: |
-        set -e
-        # Use existing agent if available, otherwise start a temporary one
-        if [ -n "${SSH_AUTH_SOCK:-}" ] && ssh-add -l >/dev/null 2>&1; then
-          started_agent=0
-        else
-          eval "$(ssh-agent -s)"
-          started_agent=1
-        fi
-
-        # Force use of SSH_ASKPASS (non-interactive)
-        SSH_ASKPASS="{{ askpass_script.path }}" \
-        SSH_ASKPASS_REQUIRE=force \
-        DISPLAY=:0 \
-        ssh-add "{{ ssh_key_path }}"
-
-        # If we started a temp agent, kill it after adding the key
-        if [ "$started_agent" = "1" ]; then
-          ssh-agent -k >/dev/null 2>&1 || true
-        fi
-      args:
-        executable: /bin/bash
-      no_log: true
-      when: ssh_key_exists.stat.exists
-
-    - name: Remove temporary askpass helper
-      file:
-        path: "{{ askpass_script.path }}"
-        state: absent
-      no_log: true
-      when: ssh_key_exists.stat.exists
+    - name: Install Wireguard
+      shell: mas install 1451685025
+      environment:
+        RUNZSH: "no"
+        CHSH: "no"

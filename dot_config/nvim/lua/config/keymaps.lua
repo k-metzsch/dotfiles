@@ -55,8 +55,8 @@ local function bg_run(cmd, title)
   })
 end
 
--- Helper for commands that need user input
-local function term_run_with_input(base_cmd, prompt_text, extra_args)
+-- -- Helper for commands that need user input (runs in background)
+local function bg_run_with_input(base_cmd, prompt_text, extra_args)
   vim.ui.input({ prompt = prompt_text }, function(answer)
     if answer and #answer > 0 then
       local cmd = base_cmd .. " " .. answer
@@ -68,20 +68,45 @@ local function term_run_with_input(base_cmd, prompt_text, extra_args)
   end)
 end
 
+-- Generalized helper for any number of inputs (prompts), collects all and runs
+local function bg_run_with_inputs(base_cmd, prompts, extra_args)
+  local function ask_next(index, answers)
+    if index > #prompts then
+      local cmd = base_cmd
+      for _, arg in ipairs(answers) do
+        cmd = cmd .. " " .. arg
+      end
+      if extra_args then
+        cmd = cmd .. " " .. extra_args
+      end
+      bg_run(cmd, cmd)
+      return
+    end
+    vim.ui.input({ prompt = prompts[index] }, function(input)
+      if input and #input > 0 then
+        table.insert(answers, input)
+        ask_next(index + 1, answers)
+      end
+    end)
+  end
+  ask_next(1, {})
+end
+
 -- Which-key setup for top-level groups
 local wk = require("which-key")
 wk.add({
   { "<leader>d", group = "Debug", icon = "" },
-  { "<leader>L", group = "Laravel", icon = "" },
-  { "<leader>Lh", group = "IDE-Helper", icon = "" },
+  { "<leader>L", group = "Laravel", icon = "" },
+  { "<leader>Lh", group = "IDE-Helper", icon = "" },
+  { "<leader>LQ", group = "Queue", icon = "" },
+  { "<leader>Ll", group = "Livewire", icon = "" },
   { "<leader>P", group = "Python", icon = "" },
   { "<leader>F", group = "Flutter", icon = "" },
   { "<leader>Fb", group = "Build", icon = "" },
+  { "<leader>Fc", group = "Create", icon = "" },
   { "<leader>Fp", group = "Pub", icon = "" },
   { "<leader>Fl", group = "Log", icon = "" },
   { "<leader>R", group = "Rust", icon = "" },
-  { "<leader>G", group = "Go", icon = "" },
-  { "<leader>p", desc = "Projects", icon = "" },
 })
 
 -- Show a close key only when a terminal is open
@@ -102,16 +127,6 @@ wk.add({
     end,
   },
 })
-
--- Dashboard project picker
-local alpha_ok, alpha = pcall(require, "alpha")
-if alpha_ok then
-  alpha.add_mapping("p", "<cmd>Telescope projects<cr>", {
-    desc = "Projects",
-    hl = "AlphaButtons",
-    keymap = { "n" },
-  })
-end
 
 -----------------------------------------------------------------------
 -- DAP (DEBUG) KEYMAPS (<leader>d)
@@ -166,9 +181,6 @@ end, "Clear routes")
 map("n", "<leader>LC", function()
   bg_run(artisan .. "view:clear")
 end, "Clear views")
-map("n", "<leader>Ll", function()
-  bg_run(artisan .. "route:list")
-end, "Route List")
 
 -- Cache and Config
 map("n", "<leader>Lo", function()
@@ -200,8 +212,6 @@ end, "Models")
 map("n", "<leader>Lhf", function()
   bg_run(artisan .. "ide-helper:meta")
 end, "Meta")
-
--- Extra handy Laravel commands
 map("n", "<leader>LQw", function()
   term_run(artisan .. "queue:work", "Queue Work")
 end, "Queue Work (interactive)")
@@ -210,41 +220,182 @@ map("n", "<leader>LQr", function()
 end, "Queue Restart")
 
 -----------------------------------------------------------------------
+-- LARAVEL LIVEWIRE ENHANCEMENTS (<leader>Ll)
+-----------------------------------------------------------------------
+map("n", "<leader>Llm", function()
+  bg_run_with_inputs(artisan .. "livewire:make", { "Component name:" })
+end, "Make Component")
+
+map("n", "<leader>Llv", function()
+  bg_run_with_inputs(artisan .. "livewire:move", { "Component to move (from):", "New name/location (to):" })
+end, "Move/Rename Component")
+
+map("n", "<leader>Llc", function()
+  bg_run_with_inputs(artisan .. "livewire:copy", { "Component to copy (from):", "New name/location (to):" })
+end, "Copy Component")
+
+map("n", "<leader>Lld", function()
+  bg_run_with_inputs(artisan .. "livewire:delete", { "Component name to delete:" })
+end, "Delete Component")
+
+map("n", "<leader>Lls", function()
+  bg_run(artisan .. "livewire:stubs", "Publish Stubs")
+end, "Publish Stubs")
+
+-----------------------------------------------------------------------
 -- LARAVEL MAKE ENHANCEMENTS (<leader>Lm)
 -----------------------------------------------------------------------
 local function artisan_make(cmd, prompt_text, extra_args)
-  term_run_with_input(artisan .. "make:" .. cmd, prompt_text or ("Make " .. cmd .. ":"), extra_args)
+  bg_run_with_input(artisan .. "make:" .. cmd, prompt_text or ("Make " .. cmd .. ":"), extra_args)
 end
 
 map("n", "<leader>Lm", function()
   local items = {
-    { cmd = "model", label = "Model (-a: all artifacts)", extra = "-a" },
-    { cmd = "model", label = "Model (+migration)", extra = "-m" },
-    { cmd = "controller", label = "Controller", extra = nil },
-    { cmd = "controller", label = "Controller (resource)", extra = "--resource" },
-    { cmd = "controller", label = "Controller (invokable)", extra = "--invokable" },
-    { cmd = "controller", label = "Controller (API)", extra = "--api" },
-    { cmd = "migration", label = "Migration", extra = nil },
-    { cmd = "seeder", label = "Seeder", extra = nil },
-    { cmd = "factory", label = "Factory", extra = nil },
-    { cmd = "request", label = "Form Request", extra = nil },
-    { cmd = "resource", label = "API Resource", extra = nil },
-    { cmd = "middleware", label = "Middleware", extra = nil },
-    { cmd = "event", label = "Event", extra = nil },
-    { cmd = "listener", label = "Listener", extra = nil },
-    { cmd = "job", label = "Job", extra = nil },
-    { cmd = "mail", label = "Mailable", extra = nil },
-    { cmd = "notification", label = "Notification", extra = nil },
-    { cmd = "provider", label = "Service Provider", extra = nil },
-    { cmd = "cast", label = "Eloquent Cast", extra = nil },
-    { cmd = "channel", label = "Broadcast Channel", extra = nil },
-    { cmd = "component", label = "Blade Component", extra = nil },
-    { cmd = "command", label = "Artisan Console Command", extra = nil },
-    { cmd = "observer", label = "Observer", extra = nil },
-    { cmd = "test", label = "Test (Feature/Pest)", extra = nil },
-    { cmd = "test", label = "Test (Unit)", extra = "--unit" },
-    { cmd = "view", label = "View (Laravel 11+)", extra = nil },
-    { cmd = "scope", label = "Eloquent Scope (Laravel 11+)", extra = nil },
+    {
+      cmd = "model",
+      label = "Model (-a: all artifacts)",
+      extra = "-a",
+    },
+    {
+      cmd = "model",
+      label = "Model (+migration)",
+      extra = "-m",
+    },
+    {
+      cmd = "controller",
+      label = "Controller",
+      extra = nil,
+    },
+    {
+      cmd = "controller",
+      label = "Controller (resource)",
+      extra = "--resource",
+    },
+    {
+      cmd = "controller",
+      label = "Controller (invokable)",
+      extra = "--invokable",
+    },
+    {
+      cmd = "controller",
+      label = "Controller (API)",
+      extra = "--api",
+    },
+    {
+      cmd = "migration",
+      label = "Migration",
+      extra = nil,
+    },
+    {
+      cmd = "seeder",
+      label = "Seeder",
+      extra = nil,
+    },
+    {
+      cmd = "factory",
+      label = "Factory",
+      extra = nil,
+    },
+    {
+      cmd = "request",
+      label = "Form Request",
+      extra = nil,
+    },
+    {
+      cmd = "resource",
+      label = "API Resource",
+      extra = nil,
+    },
+    {
+      cmd = "middleware",
+      label = "Middleware",
+      extra = nil,
+    },
+    {
+      cmd = "event",
+      label = "Event",
+      extra = nil,
+    },
+    {
+      cmd = "listener",
+      label = "Listener",
+      extra = nil,
+    },
+    {
+      cmd = "job",
+      label = "Job",
+      extra = nil,
+    },
+    {
+      cmd = "mail",
+      label = "Mailable",
+      extra = nil,
+    },
+    {
+      cmd = "notification",
+      label = "Notification",
+      extra = nil,
+    },
+    {
+      cmd = "provider",
+      label = "Service Provider",
+      extra = nil,
+    },
+    {
+      cmd = "cast",
+      label = "Eloquent Cast",
+      extra = nil,
+    },
+    {
+      cmd = "channel",
+      label = "Broadcast Channel",
+      extra = nil,
+    },
+    {
+      cmd = "component",
+      label = "Blade Component",
+      extra = nil,
+    },
+    {
+      cmd = "livewire",
+      label = "Livewire Component",
+      extra = nil,
+    },
+    {
+      cmd = "command",
+      label = "Artisan Console Command",
+      extra = nil,
+    },
+    {
+      cmd = "observer",
+      label = "Observer",
+      extra = nil,
+    },
+    {
+      cmd = "test",
+      label = "Test (Feature/Pest)",
+      extra = nil,
+    },
+    {
+      cmd = "test",
+      label = "Test (Unit)",
+      extra = "--unit",
+    },
+    {
+      cmd = "view",
+      label = "View (Laravel 11+)",
+      extra = nil,
+    },
+    {
+      cmd = "scope",
+      label = "Eloquent Scope (Laravel 11+)",
+      extra = nil,
+    },
+    {
+      cmd = "form",
+      label = "Eloquent Scope (Laravel 11+)",
+      extra = nil,
+    },
   }
   vim.ui.select(items, {
     prompt = "Artisan make:",
@@ -260,123 +411,154 @@ map("n", "<leader>Lm", function()
 end, "Artisan Make")
 
 -----------------------------------------------------------------------
--- PYTHON (<leader>P)
------------------------------------------------------------------------
-map("n", "<leader>PV", "<cmd>VenvSelect<cr>", "Select VirtualEnv")
-map("n", "<leader>Pv", "<cmd>VenvSelectCached<cr>", "Select Cached VirtualEnv")
-map("n", "<leader>Pc", function()
-  vim.ui.input({ prompt = "Venv name: " }, function(name)
-    if name then
-      bg_run("python -m venv " .. name, "Create Venv")
-    end
-  end)
-end, "Create VirtualEnv")
-map("n", "<leader>Pi", function()
-  vim.ui.input({ prompt = "Pip install: " }, function(pkg)
-    if pkg then
-      bg_run("pip install " .. pkg, "Pip Install")
-    end
-  end)
-end, "Pip Install")
-map("n", "<leader>Pr", function()
-  term_run("python -u " .. vim.fn.expand("%:p"), "Python Run")
-end, "Run File")
-map("n", "<leader>Pt", function()
-  term_run("pytest -v " .. vim.fn.expand("%:p"), "Pytest File")
-end, "Test File")
-map("n", "<leader>Pm", function()
-  term_run_with_input("python -m", "Run module (python -m):")
-end, "Run Python Module")
-
------------------------------------------------------------------------
 -- FLUTTER (<leader>F)
 -----------------------------------------------------------------------
--- Core run/reload/restart/session controls
 map("n", "<leader>Fr", "<cmd>FlutterRun<cr>", "Run App")
 map("n", "<leader>Fd", "<cmd>FlutterDebug<cr>", "Run in Debug Mode")
 map("n", "<leader>Fh", "<cmd>FlutterReload<cr>", "Hot Reload")
 map("n", "<leader>FR", "<cmd>FlutterRestart<cr>", "Hot Restart")
 map("n", "<leader>Fq", "<cmd>FlutterQuit<cr>", "Quit App")
-map("n", "<leader>FA", "<cmd>FlutterAttach<cr>", "Attach to App")
-map("n", "<leader>FD", "<cmd>FlutterDetach<cr>", "Detach (keep running)")
-
--- Devices / Emulators
 map("n", "<leader>Fs", "<cmd>FlutterDevices<cr>", "Select Device")
 map("n", "<leader>Fe", "<cmd>FlutterEmulators<cr>", "Select Emulator")
-
--- Outline
 map("n", "<leader>Fo", "<cmd>FlutterOutlineToggle<cr>", "Toggle Outline")
 map("n", "<leader>FO", "<cmd>FlutterOutlineOpen<cr>", "Open Outline")
-
--- DevTools
 map("n", "<leader>Fv", "<cmd>FlutterDevTools<cr>", "Start DevTools Server")
 map("n", "<leader>FV", "<cmd>FlutterDevToolsActivate<cr>", "Activate DevTools")
 map("n", "<leader>FP", "<cmd>FlutterCopyProfilerUrl<cr>", "Copy Profiler URL")
-
--- LSP helpers
 map("n", "<leader>FL", "<cmd>FlutterLspRestart<cr>", "LSP Restart (Dart)")
 map("n", "<leader>FS", "<cmd>FlutterSuper<cr>", "Go To Super")
 map("n", "<leader>FN", "<cmd>FlutterReanalyze<cr>", "Reanalyze Project")
-map("n", "<leader>Fz", "<cmd>FlutterRename<cr>", "Flutter Rename (updates imports)")
-
--- Logs
+map("n", "<leader>Fz", "<cmd>FlutterRename<cr>", "Flutter Rename")
+map("n", "<leader>Fcb", "<cmd>FlutterCreateBloc<cr>", "Create bloc componenet")
+map("n", "<leader>Fcc", "<cmd>FlutterCreateCubit<cr>", "Create cubit component")
 map("n", "<leader>Flc", "<cmd>FlutterLogClear<cr>", "Log: Clear")
 map("n", "<leader>Flt", "<cmd>FlutterLogToggle<cr>", "Log: Toggle")
-
+map("n", "<leader>Fpg", "<cmd>FlutterPubGet<cr>", "pub get")
+map("n", "<leader>Fpu", "<cmd>FlutterPubUpgrade<cr>", "pub upgrade")
+map("n", "<leader>Fpp", "<cmd>PubspecAssistAddPackage<cr>", "pub add package")
+map("n", "<leader>Fpd", "<cmd>PubspecAssistAddDevPackage<cr>", "pub add dev package")
+map("n", "<leader>Fpv", "<cmd>PubspecAssistPickVersion<cr>", "pub pick version")
+map("n", "<leader>Fpm", function()
+  bg_run("flutter pub upgrade", "flutter pub upgrade --major-versions")
+end, "pub upgrade major")
 map("n", "<leader>Fc", function()
   bg_run("flutter clean", "flutter clean")
 end, "flutter clean")
 map("n", "<leader>Fg", function()
-  term_run("flutter gen-l10n", "flutter gen-l10n")
+  bg_run("flutter gen-l10n", "flutter gen-l10n")
 end, "flutter gen-l10n")
-
--- Pubspec
-map("n", "<leader>Fpg", function()
-  bg_run("flutter pub get", "flutter pub get")
-end, "flutter pub get")
-map("n", "<leader>Fpu", function()
-  bg_run("flutter pub upgrade", "flutter pub upgrade")
-end, "flutter pub upgrade")
-map("n", "<leader>Fpu", function()
-  bg_run("flutter pub upgrade", "flutter pub upgrade --major-versions")
-end, "flutter pub upgrade Major")
-map("n", "<leader>Fpo", function()
-  term_run("flutter pub outdated", "flutter pub outdated")
-end, "flutter pub outdated")
-
--- Build
 map("n", "<leader>Fba", function()
-  term_run("flutter build apk", "flutter build apk")
+  bg_run("flutter build apk", "flutter build apk")
 end, "Build APK (release)")
 map("n", "<leader>Fbb", function()
-  term_run("flutter build appbundle", "flutter build appbundle")
+  bg_run("flutter build appbundle", "flutter build appbundle")
 end, "Build AppBundle (AAB)")
 map("n", "<leader>Fbi", function()
-  term_run("flutter build ios", "flutter build ios")
+  bg_run("flutter build ios", "flutter build ios")
 end, "Build iOS")
 map("n", "<leader>Fbp", function()
-  term_run("flutter build ipa", "flutter build ipa")
+  bg_run("flutter build ipa", "flutter build ipa")
 end, "Build IPA")
-
-map("n", "<leader>Fy", function()
-  term_run("flutter analyze", "flutter analyze")
-end, "Flutter Analyze")
-map("n", "<leader>Ff", function()
-  bg_run("dart format .", "dart format .")
-end, "Dart Format (project)")
 map("n", "<leader>Ff", function()
   bg_run("dart run flutter_native_splash:create", "create splash")
 end, "Dart create Splash screen")
-
 map("n", "<leader>FX", function()
-  local xcworkspace = vim.fn.glob("ios/*.xcworkspace")
-  if xcworkspace ~= "" and vim.fn.filereadable(xcworkspace) == 1 then
-    vim.fn.system({ "open", xcworkspace })
+  local workspace = "ios/Runner.xcworkspace"
+  if vim.fn.isdirectory(workspace) == 1 then
+    vim.fn.jobstart({ "open", workspace }, { detach = true })
     vim.notify("Opening Xcode workspace...", vim.log.levels.INFO)
   else
-    vim.notify("No .xcworkspace found in ios/ directory", vim.log.levels.WARN)
+    vim.notify("No Runner.xcworkspace found in ios/ directory", vim.log.levels.WARN)
   end
 end, "Open Xcode Workspace")
+
+-----------------------------------------------------------------------
+-- FLUTTER Very good cli (<leader>FV>)
+-----------------------------------------------------------------------
+local function flutter_make(cmd, prompt_text, extra_args)
+  bg_run_with_input(cmd, prompt_text or ("Create: " .. cmd), extra_args)
+end
+
+map("n", "<leader>FV", function()
+  local items = {
+    {
+      cmd = "very_good create flutter_app",
+      label = "Flutter App",
+      extra = nil,
+    },
+    {
+      cmd = "very_good create flutter_app",
+      label = "Flutter App (Wear)",
+      extra = "--template wear",
+    },
+    {
+      cmd = "very_good create flutter_app",
+      label = "Flutter App (Custom Org)",
+      extra = "--org com.example",
+    },
+    {
+      cmd = "very_good create flutter_app",
+      label = "Flutter App (Custom Desc)",
+      extra = "--desc 'My app description'",
+    },
+    {
+      cmd = "very_good create flame_game",
+      label = "Flame Game",
+      extra = nil,
+    },
+    {
+      cmd = "very_good create dart_cli",
+      label = "Dart CLI",
+      extra = nil,
+    },
+    {
+      cmd = "very_good create dart_cli",
+      label = "Dart CLI (Custom Executable)",
+      extra = "--executable-name my_exec",
+    },
+    {
+      cmd = "very_good create flutter_plugin",
+      label = "Flutter Plugin",
+      extra = nil,
+    },
+    {
+      cmd = "very_good create flutter_plugin",
+      label = "Flutter Plugin (Android/iOS Only)",
+      extra = "--platforms android,ios",
+    },
+    {
+      cmd = "very_good create flutter_package",
+      label = "Flutter Package",
+      extra = nil,
+    },
+    {
+      cmd = "very_good create dart_package",
+      label = "Dart Package",
+      extra = nil,
+    },
+    {
+      cmd = "very_good create dart_package",
+      label = "Dart Package (Publishable)",
+      extra = "--publishable",
+    },
+    {
+      cmd = "very_good create docs_site",
+      label = "Docs Site",
+      extra = nil,
+    },
+  }
+  vim.ui.select(items, {
+    prompt = "very_good_cli create:",
+    format_item = function(item)
+      return item.label
+    end,
+  }, function(choice)
+    if not choice then
+      return
+    end
+    flutter_make(choice.cmd, choice.label .. " name:", choice.extra)
+  end)
+end, "Very Good CLI Create")
 
 -----------------------------------------------------------------------
 -- RUST (<leader>R)
@@ -408,27 +590,3 @@ end, "Cargo Test")
 map("n", "<leader>RB", function()
   term_run("cargo bench", "Cargo Bench")
 end, "Cargo Bench")
-
------------------------------------------------------------------------
--- GO (<leader>G)
------------------------------------------------------------------------
-map("n", "<leader>Gr", "<cmd>GoRun<cr>", "Run")
-map("n", "<leader>Gt", "<cmd>GoTest<cr>", "Test")
-map("n", "<leader>GT", "<cmd>GoTestFunc<cr>", "Test Function")
-map("n", "<leader>Gc", "<cmd>GoCoverage<cr>", "Test Coverage")
-map("n", "<leader>Gd", function()
-  require("dap").run({ type = "go", name = "Debug Test", request = "launch", mode = "test", program = "${fileDirname}" })
-end, "Debug Test")
-map("n", "<leader>Gm", "<cmd>GoModTidy<cr>", "Tidy Modules")
-map("n", "<leader>Gi", "<cmd>GoInstall<cr>", "Install")
-map("n", "<leader>Ge", "<cmd>GoAlternate<cr>", "Go to Test file")
-map("n", "<leader>Gb", "<cmd>GoBuild<cr>", "Build")
-map("n", "<leader>Gv", "<cmd>GoVet<cr>", "Vet")
-map("n", "<leader>Gf", "<cmd>GoFmt<cr>", "Format")
-map("n", "<leader>Gg", "<cmd>GoGenerate<cr>", "Generate")
-map("n", "<leader>GI", "<cmd>GoImpl<cr>", "Implement Interface")
-map("n", "<leader>GA", "<cmd>GoAddTag<cr>", "Add Struct Tags")
-map("n", "<leader>GR", "<cmd>GoRmTag<cr>", "Remove Struct Tags")
-map("n", "<leader>GE", "<cmd>GoIfErr<cr>", "Insert if err")
-map("n", "<leader>GF", "<cmd>GoFillStruct<cr>", "Fill Struct")
-map("n", "<leader>GK", "<cmd>GoDoc<cr>", "Show Doc")

@@ -21,7 +21,6 @@
     - name: Setup laravel installer globally
       shell: composer global require laravel/installer
 
-
     - name: Update Android SDK Manager
       shell: sdkmanager --update
 
@@ -77,6 +76,12 @@
     - name: Accept Android licenses for Flutter
       shell: yes | flutter doctor --android-licenses
 
-    - name: Install the FlutterFire CLI
-      shell: dart pub global activate flutterfire_cli
+    - name: Install masoc_cli
+      shell: dart pub global activate mason_cli
+
+    - name: Install very_good_cli
+      shell: dart pub global activate very_good_cli
+
+    - name: Install bloc_tools
+      shell: dart pub global activate bloc_tools
 
