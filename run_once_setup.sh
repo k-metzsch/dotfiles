@@ -4,25 +4,25 @@ IFS=$'\n\t'
 
 KEEPALIVE_PID=""
 cleanup() {
-  if [[ -n "${KEEPALIVE_PID}" ]] && ps -p "${KEEPALIVE_PID}" >/dev/null 2>&1; then
-    kill "${KEEPALIVE_PID}" || true
-  fi
+	if [[ -n "${KEEPALIVE_PID}" ]] && ps -p "${KEEPALIVE_PID}" >/dev/null 2>&1; then
+		kill "${KEEPALIVE_PID}" || true
+	fi
 }
 trap cleanup EXIT
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
-  echo "This script must run on macOS."
-  exit 1
+	echo "This script must run on macOS."
+	exit 1
 fi
 
 if [[ $EUID -ne 0 ]]; then
-  echo "Requesting sudo privileges..."
-  sudo -v
-  (while true; do
-    sudo -n true
-    sleep 60
-  done) 2>/dev/null &
-  KEEPALIVE_PID=$!
+	echo "Requesting sudo privileges..."
+	sudo -v
+	(while true; do
+		sudo -n true
+		sleep 60
+	done) 2>/dev/null &
+	KEEPALIVE_PID=$!
 fi
 
 ################################################################################
@@ -36,7 +36,6 @@ defaults write com.apple.universalaccess reduceMotion -int 1
 defaults write com.apple.universalaccess reduceTransparency -int 1
 
 # Disable "shake mouse pointer to locate"
-# Note: key name is CGDisableCursorLocationMagnification; true disables the effect
 defaults write -g CGDisableCursorLocationMagnification -bool true
 
 # Always show scrollbars
@@ -58,6 +57,44 @@ defaults write -g WebAutomaticSpellingCorrectionEnabled -bool false
 
 # Full keyboard access (Tab moves between all controls)
 defaults write -g AppleKeyboardUIMode -int 3
+
+################################################################################
+# Disable Spotlight completely & remove keybind (for Raycast users)
+################################################################################
+
+# Disable Spotlight indexing for all volumes (permanent way)
+echo "Disabling Spotlight indexing (may require admin)..."
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist 2>/dev/null || true
+
+# Prevent re-enabling:
+sudo chmod 600 /System/Library/LaunchDaemons/com.apple.metadata.mds.plist || true
+
+# Remove all indexed metadata
+sudo mdutil -a -i off
+sudo mdutil -a -E
+
+# Remove Spotlight from menu bar (for new macOS versions, this disables the icon):
+defaults write com.apple.Spotlight MenuItemHidden -int 1 || true
+killall SystemUIServer || true
+
+# Remove Spotlight command-space keybinding (replace with Raycast recommended)
+echo "Disabling Spotlight shortcuts and removing Cmd+Space binding..."
+
+# macOS Monterey and later use Apple Symbolic HotKeys (double-check after new macOS upgrades)
+# Disable Spotlight search HotKey (default 64/65 for search/show finder search window)
+# 64: Spotlight main window (CMD+SPACE), 65: Finder search window (CMD+OPT+SPACE)
+
+for index in 64 65; do
+	defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add "$index" '{
+      enabled = 0;
+      value = {
+          parameters = (32, 49, 1048576);
+          type = "standard";
+      };
+  }'
+done
+
+# Note: Raycast will prompt to register for Command+Space on first launch; or assign manually.
 
 ################################################################################
 # Trackpad / Mouse
@@ -182,13 +219,13 @@ sudo softwareupdate --schedule off || true
 ################################################################################
 
 if ! command -v brew >/dev/null 2>&1; then
-  echo "Homebrew not found. Installing Homebrew..."
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  if [ -x "/opt/homebrew/bin/brew" ]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-  elif [ -x "/usr/local/bin/brew" ]; then
-    eval "$(/usr/local/bin/brew shellenv)"
-  fi
+	echo "Homebrew not found. Installing Homebrew..."
+	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	if [ -x "/opt/homebrew/bin/brew" ]; then
+		eval "$(/opt/homebrew/bin/brew shellenv)"
+	elif [ -x "/usr/local/bin/brew" ]; then
+		eval "$(/usr/local/bin/brew shellenv)"
+	fi
 fi
 
 # Brew niceties
@@ -196,8 +233,8 @@ brew analytics off || true
 brew update
 
 if ! command -v ansible >/dev/null 2>&1; then
-  echo "Installing Ansible..."
-  brew install ansible
+	echo "Installing Ansible..."
+	brew install ansible
 fi
 
 ################################################################################
@@ -214,10 +251,10 @@ killall SystemUIServer || true
 ################################################################################
 
 if [[ -f "${HOME}/.bootstrap/initial-setup.yml" ]]; then
-  ansible-playbook "${HOME}/.bootstrap/initial-setup.yml" --ask-become-pass
+	ansible-playbook "${HOME}/.bootstrap/initial-setup.yml" --ask-become-pass
 fi
 if [[ -f "${HOME}/.bootstrap/dev-setup.yml" ]]; then
-  ansible-playbook "${HOME}/.bootstrap/dev-setup.yml" --ask-become-pass
+	ansible-playbook "${HOME}/.bootstrap/dev-setup.yml" --ask-become-pass
 fi
 
 echo "Bootstrap complete."

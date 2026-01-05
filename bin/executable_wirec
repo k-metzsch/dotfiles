@@ -1,0 +1,46 @@
+#!/bin/bash
+set -e
+
+API_URL="https://vpn.metzsch.xyz/api/wgconf?token="
+WG_TMP_CONF="/tmp/wg0.conf"
+
+cleanup() {
+	if [ -f "$WG_TMP_CONF" ]; then
+		echo "Shutting down tunnel and cleaning up..."
+		sudo wg-quick down "$WG_TMP_CONF" || {
+			echo "wg-quick down failed. Try to manually bring down the interface:"
+			echo "  sudo ifconfig wg0 down"
+		}
+		rm -f "$WG_TMP_CONF"
+	else
+		echo "Config already gone. If tunnel still up, manually bring down:"
+		echo "  sudo ifconfig wg0 down"
+	fi
+	exit
+}
+
+trap cleanup INT TERM EXIT
+
+read -s -p "Enter WireGuard API token: " API_TOKEN
+echo
+
+if [[ -z "$API_TOKEN" ]]; then
+	echo "Error: Token required."
+	exit 1
+fi
+
+WG_CONF_CONTENT=$(curl -fsSL "${API_URL}${API_TOKEN}")
+if [[ -z "$WG_CONF_CONTENT" ]]; then
+	echo "Error: Could not fetch config from API." >&2
+	exit 2
+fi
+
+echo "$WG_CONF_CONTENT" >"$WG_TMP_CONF"
+chmod 600 "$WG_TMP_CONF"
+
+echo "Starting WireGuard tunnel using $WG_TMP_CONF..."
+sudo wg-quick up "$WG_TMP_CONF"
+echo "Tunnel started using config in $WG_TMP_CONF"
+echo "Press Enter to close tunnel and clean up..."
+read
+cleanup

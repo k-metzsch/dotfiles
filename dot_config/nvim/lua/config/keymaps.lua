@@ -107,6 +107,7 @@ wk.add({
   { "<leader>Fp", group = "Pub", icon = "" },
   { "<leader>Fl", group = "Log", icon = "" },
   { "<leader>R", group = "Rust", icon = "" },
+  { "<leader>G", group = "Go", icon = "" },
 })
 
 -- Show a close key only when a terminal is open
@@ -590,3 +591,27 @@ end, "Cargo Test")
 map("n", "<leader>RB", function()
   term_run("cargo bench", "Cargo Bench")
 end, "Cargo Bench")
+
+-----------------------------------------------------------------------
+-- GO (<leader>G)
+-----------------------------------------------------------------------
+map("n", "<leader>Gr", "<cmd>GoRun<cr>", "Run")
+map("n", "<leader>Gt", "<cmd>GoTest<cr>", "Test")
+map("n", "<leader>GT", "<cmd>GoTestFunc<cr>", "Test Function")
+map("n", "<leader>Gc", "<cmd>GoCoverage<cr>", "Test Coverage")
+map("n", "<leader>Gd", function()
+  require("dap").run({ type = "go", name = "Debug Test", request = "launch", mode = "test", program = "${fileDirname}" })
+end, "Debug Test")
+map("n", "<leader>Gm", "<cmd>GoModTidy<cr>", "Tidy Modules")
+map("n", "<leader>Gi", "<cmd>GoInstall<cr>", "Install")
+map("n", "<leader>Ge", "<cmd>GoAlternate<cr>", "Go to Test file")
+map("n", "<leader>Gb", "<cmd>GoBuild<cr>", "Build")
+map("n", "<leader>Gv", "<cmd>GoVet<cr>", "Vet")
+map("n", "<leader>Gf", "<cmd>GoFmt<cr>", "Format")
+map("n", "<leader>Gg", "<cmd>GoGenerate<cr>", "Generate")
+map("n", "<leader>GI", "<cmd>GoImpl<cr>", "Implement Interface")
+map("n", "<leader>GA", "<cmd>GoAddTag<cr>", "Add Struct Tags")
+map("n", "<leader>GR", "<cmd>GoRmTag<cr>", "Remove Struct Tags")
+map("n", "<leader>GE", "<cmd>GoIfErr<cr>", "Insert if err")
+map("n", "<leader>GF", "<cmd>GoFillStruct<cr>", "Fill Struct")
+map("n", "<leader>GK", "<cmd>GoDoc<cr>", "Show Doc")

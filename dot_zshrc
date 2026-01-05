@@ -64,14 +64,8 @@ export PATH="$PATH:/Users/k-metzsch/.composer/vendor/bin"
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 
-eval "$(pyenv init - zsh)"
 eval "$(atuin init zsh)"
 
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/k-metzsch/.docker/completions $fpath)
-autoload -Uz compinit
-compinit
-# End of Docker CLI completions
 export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 export PATH="/opt/homebrew/bin:$PATH"
 export PATH="/opt/homebrew/opt/trash-cli/bin:$PATH"

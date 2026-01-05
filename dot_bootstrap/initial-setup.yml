@@ -20,6 +20,7 @@
       - yazi
       - fzf
       - lazygit
+      - wireguard-tools
       - fd
       - mas
       - podman
@@ -40,7 +41,6 @@
       - gimp
       - inkscape
       - kitty
-      - libreoffice
       - font-0xproto-nerd-font
     ssh_key_path: "{{ ansible_env.HOME }}/Library/Mobile Documents/com~apple~CloudDocs/.ssh/id_ed25519"
 
@@ -86,12 +86,6 @@
 
     - name: Install Xcode
       shell: mas install 497799835
-      environment:
-        RUNZSH: "no"
-        CHSH: "no"
 
-    - name: Install Wireguard
-      shell: mas install 1451685025
-      environment:
-        RUNZSH: "no"
-        CHSH: "no"
+    - name: Install Collabora Office
+      shell: mas install 6754639856
