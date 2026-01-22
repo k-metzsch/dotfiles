@@ -36,13 +36,9 @@ function y() {
 }
 
 function clg() {
-  local orig_dir="$PWD"
   local chezmoi_dir
   chezmoi_dir=$(chezmoi source-path)
-
-  cd "$chezmoi_dir" || return
-  lazygit
-  cd "$orig_dir" || return
+  ( cd "$chezmoi_dir" && lazygit )
 }
 #########################################
 # Functions - end
