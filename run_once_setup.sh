@@ -8,15 +8,13 @@ echo "$SCRIPT_DIR/macos/setup.sh"
 
 if [ "$OS_NAME" = "Darwin" ]; then
 	if [ -x "$SCRIPT_DIR/macos/setup.sh" ]; then
-		# exec "$SCRIPT_DIR/macos/setup.sh"
-		echo "macOS"
+		exec "$SCRIPT_DIR/macos/setup.sh"
 	else
 		exit 1
 	fi
 elif [ "$OS_NAME" = "Linux" ]; then
 	if [ -x "$SCRIPT_DIR/linux/setup.sh" ]; then
-		# exec "$SCRIPT_DIR/linux/setup.sh"
-		echo "Linux"
+		exec "$SCRIPT_DIR/linux/setup.sh"
 	else
 		exit 1
 	fi
