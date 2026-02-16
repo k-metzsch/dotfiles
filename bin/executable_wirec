@@ -13,8 +13,8 @@ cleanup() {
 		}
 		rm -f "$WG_TMP_CONF"
 	else
-		echo "Config already gone. If tunnel still up, manually bring down:"
-		echo "  sudo ifconfig wg0 down"
+		echo "Config already gone, brining down the interface"
+		sudo ifconfig wg0 down
 	fi
 	exit
 }

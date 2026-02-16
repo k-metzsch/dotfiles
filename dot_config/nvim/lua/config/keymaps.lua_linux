@@ -55,7 +55,7 @@ local function bg_run(cmd, title)
   })
 end
 
--- -- Helper for commands that need user input (runs in background)
+-- Helper for commands that need user input (runs in background)
 local function bg_run_with_input(base_cmd, prompt_text, extra_args)
   vim.ui.input({ prompt = prompt_text }, function(answer)
     if answer and #answer > 0 then
@@ -101,11 +101,6 @@ wk.add({
   { "<leader>LQ", group = "Queue", icon = "" },
   { "<leader>Ll", group = "Livewire", icon = "" },
   { "<leader>P", group = "Python", icon = "" },
-  { "<leader>F", group = "Flutter", icon = "" },
-  { "<leader>Fb", group = "Build", icon = "" },
-  { "<leader>Fc", group = "Create", icon = "" },
-  { "<leader>Fp", group = "Pub", icon = "" },
-  { "<leader>Fl", group = "Log", icon = "" },
   { "<leader>R", group = "Rust", icon = "" },
   { "<leader>G", group = "Go", icon = "" },
 })
@@ -412,156 +407,6 @@ map("n", "<leader>Lm", function()
 end, "Artisan Make")
 
 -----------------------------------------------------------------------
--- FLUTTER (<leader>F)
------------------------------------------------------------------------
-map("n", "<leader>Fr", "<cmd>FlutterRun<cr>", "Run App")
-map("n", "<leader>Fd", "<cmd>FlutterDebug<cr>", "Run in Debug Mode")
-map("n", "<leader>Fh", "<cmd>FlutterReload<cr>", "Hot Reload")
-map("n", "<leader>FR", "<cmd>FlutterRestart<cr>", "Hot Restart")
-map("n", "<leader>Fq", "<cmd>FlutterQuit<cr>", "Quit App")
-map("n", "<leader>Fs", "<cmd>FlutterDevices<cr>", "Select Device")
-map("n", "<leader>Fe", "<cmd>FlutterEmulators<cr>", "Select Emulator")
-map("n", "<leader>Fo", "<cmd>FlutterOutlineToggle<cr>", "Toggle Outline")
-map("n", "<leader>FO", "<cmd>FlutterOutlineOpen<cr>", "Open Outline")
-map("n", "<leader>Fv", "<cmd>FlutterDevTools<cr>", "Start DevTools Server")
-map("n", "<leader>FV", "<cmd>FlutterDevToolsActivate<cr>", "Activate DevTools")
-map("n", "<leader>FP", "<cmd>FlutterCopyProfilerUrl<cr>", "Copy Profiler URL")
-map("n", "<leader>FL", "<cmd>FlutterLspRestart<cr>", "LSP Restart (Dart)")
-map("n", "<leader>FS", "<cmd>FlutterSuper<cr>", "Go To Super")
-map("n", "<leader>FN", "<cmd>FlutterReanalyze<cr>", "Reanalyze Project")
-map("n", "<leader>Fz", "<cmd>FlutterRename<cr>", "Flutter Rename")
-map("n", "<leader>Fcb", "<cmd>FlutterCreateBloc<cr>", "Create bloc componenet")
-map("n", "<leader>Fcc", "<cmd>FlutterCreateCubit<cr>", "Create cubit component")
-map("n", "<leader>Flc", "<cmd>FlutterLogClear<cr>", "Log: Clear")
-map("n", "<leader>Flt", "<cmd>FlutterLogToggle<cr>", "Log: Toggle")
-map("n", "<leader>Fpg", "<cmd>FlutterPubGet<cr>", "pub get")
-map("n", "<leader>Fpu", "<cmd>FlutterPubUpgrade<cr>", "pub upgrade")
-map("n", "<leader>Fpp", "<cmd>PubspecAssistAddPackage<cr>", "pub add package")
-map("n", "<leader>Fpd", "<cmd>PubspecAssistAddDevPackage<cr>", "pub add dev package")
-map("n", "<leader>Fpv", "<cmd>PubspecAssistPickVersion<cr>", "pub pick version")
-map("n", "<leader>Fpm", function()
-  bg_run("flutter pub upgrade", "flutter pub upgrade --major-versions")
-end, "pub upgrade major")
-map("n", "<leader>Fc", function()
-  bg_run("flutter clean", "flutter clean")
-end, "flutter clean")
-map("n", "<leader>Fg", function()
-  bg_run("flutter gen-l10n", "flutter gen-l10n")
-end, "flutter gen-l10n")
-map("n", "<leader>Fba", function()
-  bg_run("flutter build apk", "flutter build apk")
-end, "Build APK (release)")
-map("n", "<leader>Fbb", function()
-  bg_run("flutter build appbundle", "flutter build appbundle")
-end, "Build AppBundle (AAB)")
-map("n", "<leader>Fbi", function()
-  bg_run("flutter build ios", "flutter build ios")
-end, "Build iOS")
-map("n", "<leader>Fbp", function()
-  bg_run("flutter build ipa", "flutter build ipa")
-end, "Build IPA")
-map("n", "<leader>Ff", function()
-  bg_run("dart run flutter_native_splash:create", "create splash")
-end, "Dart create Splash screen")
-map("n", "<leader>FX", function()
-  local workspace = "ios/Runner.xcworkspace"
-  if vim.fn.isdirectory(workspace) == 1 then
-    vim.fn.jobstart({ "open", workspace }, { detach = true })
-    vim.notify("Opening Xcode workspace...", vim.log.levels.INFO)
-  else
-    vim.notify("No Runner.xcworkspace found in ios/ directory", vim.log.levels.WARN)
-  end
-end, "Open Xcode Workspace")
-
------------------------------------------------------------------------
--- FLUTTER Very good cli (<leader>FV>)
------------------------------------------------------------------------
-local function flutter_make(cmd, prompt_text, extra_args)
-  bg_run_with_input(cmd, prompt_text or ("Create: " .. cmd), extra_args)
-end
-
-map("n", "<leader>FV", function()
-  local items = {
-    {
-      cmd = "very_good create flutter_app",
-      label = "Flutter App",
-      extra = nil,
-    },
-    {
-      cmd = "very_good create flutter_app",
-      label = "Flutter App (Wear)",
-      extra = "--template wear",
-    },
-    {
-      cmd = "very_good create flutter_app",
-      label = "Flutter App (Custom Org)",
-      extra = "--org com.example",
-    },
-    {
-      cmd = "very_good create flutter_app",
-      label = "Flutter App (Custom Desc)",
-      extra = "--desc 'My app description'",
-    },
-    {
-      cmd = "very_good create flame_game",
-      label = "Flame Game",
-      extra = nil,
-    },
-    {
-      cmd = "very_good create dart_cli",
-      label = "Dart CLI",
-      extra = nil,
-    },
-    {
-      cmd = "very_good create dart_cli",
-      label = "Dart CLI (Custom Executable)",
-      extra = "--executable-name my_exec",
-    },
-    {
-      cmd = "very_good create flutter_plugin",
-      label = "Flutter Plugin",
-      extra = nil,
-    },
-    {
-      cmd = "very_good create flutter_plugin",
-      label = "Flutter Plugin (Android/iOS Only)",
-      extra = "--platforms android,ios",
-    },
-    {
-      cmd = "very_good create flutter_package",
-      label = "Flutter Package",
-      extra = nil,
-    },
-    {
-      cmd = "very_good create dart_package",
-      label = "Dart Package",
-      extra = nil,
-    },
-    {
-      cmd = "very_good create dart_package",
-      label = "Dart Package (Publishable)",
-      extra = "--publishable",
-    },
-    {
-      cmd = "very_good create docs_site",
-      label = "Docs Site",
-      extra = nil,
-    },
-  }
-  vim.ui.select(items, {
-    prompt = "very_good_cli create:",
-    format_item = function(item)
-      return item.label
-    end,
-  }, function(choice)
-    if not choice then
-      return
-    end
-    flutter_make(choice.cmd, choice.label .. " name:", choice.extra)
-  end)
-end, "Very Good CLI Create")
-
------------------------------------------------------------------------
 -- RUST (<leader>R)
 -----------------------------------------------------------------------
 map("n", "<leader>Rr", "<cmd>RustLsp run<cr>", "Run")
@@ -615,3 +460,29 @@ map("n", "<leader>GR", "<cmd>GoRmTag<cr>", "Remove Struct Tags")
 map("n", "<leader>GE", "<cmd>GoIfErr<cr>", "Insert if err")
 map("n", "<leader>GF", "<cmd>GoFillStruct<cr>", "Fill Struct")
 map("n", "<leader>GK", "<cmd>GoDoc<cr>", "Show Doc")
+
+-----------------------------------------------------------------------
+-- PYTHON (<leader>P)
+-----------------------------------------------------------------------
+map("n", "<leader>PV", "<cmd>VenvSelect<cr>", "Select VirtualEnv")
+map("n", "<leader>Pv", "<cmd>VenvSelectCached<cr>", "Select Cached VirtualEnv")
+map("n", "<leader>Pc", function()
+  vim.ui.input({ prompt = "Venv name: " }, function(name)
+    if name then
+      bg_run("python3 -m venv " .. name, "Create Venv")
+    end
+  end)
+end, "Create VirtualEnv")
+map("n", "<leader>Pi", function()
+  vim.ui.input({ prompt = "Pip install: " }, function(pkg)
+    if pkg then
+      bg_run("pip3 install " .. pkg, "Pip Install")
+    end
+  end)
+end, "Pip Install")
+map("n", "<leader>Pr", function()
+  term_run("python3 -u " .. vim.fn.expand("%:p"), "Python Run")
+end, "Run File")
+map("n", "<leader>Pm", function()
+  bg_run_with_input("python3 -m", "Run module (python -m):")
+end, "Run Python Module")

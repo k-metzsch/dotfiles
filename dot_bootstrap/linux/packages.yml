@@ -1,0 +1,62 @@
+---
+- name: Install packages on CachyOS
+  hosts: localhost
+  become: yes
+
+  vars:
+    pacman_packages:
+      - chezmoi
+      - atuin
+      - btop
+      - go
+      - rustup
+      - php
+      - neovim
+      - fzf
+      - lazygit
+      - wireguard-tools
+      - fd
+      - podman
+      - podman-compose
+      - gimp
+      - inkscape
+      - kitty
+      - obsidian
+      - bitwarden
+      - localsend
+      - ventoy
+    aur_packages:
+      - yazi
+      - dbeaver-community
+      - keymapp
+      - podman-desktop
+      - mullvad-browser
+      - font-fira-code-nerd-font
+
+  tasks:
+    - name: Ensure Paru is installed (for AUR access)
+      pacman:
+        name: paru
+        state: present
+
+    - name: Install packages with pacman
+      pacman:
+        name: "{{ pacman_packages }}"
+        state: present
+        update_cache: yes
+
+    - name: Install packages from AUR with paru
+      become: false
+      aur:
+        name: "{{ item }}"
+        use: paru
+        skip_pgp_check: yes
+      with_items: "{{ aur_packages }}"
+      register: aur_out
+      failed_when: false
+
+  collections:
+    - kewlfft.aur
+    - name: Show AUR output
+      debug:
+        var: aur_out

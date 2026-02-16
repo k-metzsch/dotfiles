@@ -1,0 +1,50 @@
+if [[ -n "$SSH_CLIENT" || -n "$SSH_TTY" ]]; then
+  : # keep last login for SSH
+else
+  touch ~/.hushlogin
+fi
+
+
+ZSH_THEME="agnoster"
+zstyle ':omz:update' frequency 13
+DISABLE_AUTO_TITLE="true"
+ENABLE_CORRECTION="true"
+COMPLETION_WAITING_DOTS="true"
+plugins=(
+  git
+)
+
+source $ZSH/oh-my-zsh.sh
+source <(fzf --zsh)
+eval "$(atuin init zsh)"
+
+#------------------Functions---------------------------
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+	rm -f -- "$tmp"
+}
+
+function clg() {
+  local chezmoi_dir
+  chezmoi_dir=$(chezmoi source-path)
+  ( cd "$chezmoi_dir" && lazygit )
+}
+
+#------------------alias-------------------------------
+alias zshconfig="nvim $HOME/.zshrc"
+alias ohmyzsh="nvim $HOME/.oh-my-zsh"
+alias yazi="y"
+alias lg="lazygit"
+
+
+{{ if eq .chezmoi.os "darwin" }}
+[[ -f ~/.dart-cli-completion/zsh-config.zsh ]] && . ~/.dart-cli-completion/zsh-config.zsh || true
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+{{ else if eq .chezmoi.os "linux" }}
+# linux
+{{ end }}
+

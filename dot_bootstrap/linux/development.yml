@@ -1,0 +1,48 @@
+---
+- hosts: localhost
+  become: false
+  gather_facts: yes
+
+  vars:
+    composer_bin_path: "{{ ansible_env.HOME }}/.config/composer/vendor/bin"
+    go_bin_path: "{{ ansible_env.HOME }}/go/bin"
+    cargo_bin_path: "{{ ansible_env.HOME }}/.cargo/bin"
+
+  tasks:
+    - name: Install Laravel installer globally via Composer
+      shell: composer global require laravel/installer
+      args:
+        creates: "{{ composer_bin_path }}/laravel"
+
+    - name: Install Go Language Server (gopls)
+      shell: go install golang.org/x/tools/gopls@latest
+      environment:
+        PATH: "{{ go_bin_path }}:{{ ansible_env.PATH }}"
+      args:
+        creates: "{{ go_bin_path }}/gopls"
+
+    - name: Install clippy for Rust
+      shell: rustup component add clippy
+      args:
+        creates: "{{ cargo_bin_path }}/clippy-driver"
+
+    - name: Install rustfmt for Rust
+      shell: rustup component add rustfmt
+      args:
+        creates: "{{ cargo_bin_path }}/rustfmt"
+
+    - name: Upgrade pip (user)
+      shell: python3 -m pip install --upgrade --user pip
+
+    - name: Install Python developer tools via user pip
+      pip:
+        name:
+          - pipx
+          - black
+          - isort
+          - flake8
+          - virtualenv
+          - ipython
+        state: present
+        executable: pip3
+        extra_args: --user

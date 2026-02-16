@@ -1,20 +1,17 @@
-- hosts: localhost
+---
+- name: Install packages on macOS
+  hosts: localhost
   become: false
-  gather_facts: yes
 
   vars:
     brew_packages:
       - chezmoi
       - atuin
       - temurin
-      - php
       - btop
-      - composer
       - android-commandlinetools
       - cocoapods
       - flutter
-      - rustup
-      - node
       - neovim
       - atuin
       - yazi
@@ -32,24 +29,21 @@
       - keymapp
       - karabiner-elements
       - podman-desktop
+      - localsend
       - obsidian
-      - firefox
       - bitwarden
       - raycast
+      - mullvad-browser
       - devcleaner
-      - parallels
       - gimp
       - inkscape
       - kitty
-      - font-0xproto-nerd-font
-    ssh_key_path: "{{ ansible_env.HOME }}/Library/Mobile Documents/com~apple~CloudDocs/.ssh/id_ed25519"
+      - localsend
+      - font-fira-code-nerd-font
 
   tasks:
     - name: Ensure koekeishiya tap is added
       shell: brew tap koekeishiya/formulae
-
-    - name: Ensure slp tap is added
-      shell: brew tap slp/krunkit
 
     - name: Install Homebrew packages
       homebrew:
@@ -86,6 +80,3 @@
 
     - name: Install Xcode
       shell: mas install 497799835
-
-    - name: Install Collabora Office
-      shell: mas install 6754639856

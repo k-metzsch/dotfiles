@@ -1,0 +1,21 @@
+{{ if ne .chezmoi.os "darwin" }}
+.config/nvim/lua/plugins/lang-flutter.lua
+.config/karabiner/*
+.config/skhd/*
+.config/yabai/*
+
+{{ end }}
+
+{{ if ne .chezmoi.os "linux" }}
+.config/nvim/lua/plugins/lang-go.lua
+.config/nvim/lua/plugins/lang-laravel.lua
+.config/nvim/lua/plugins/lang-python.lua
+.config/nvim/lua/plugins/lang-rust.lua
+.config/nvim/lua/plugins/lang-tailwind.lua
+.config/nvim/lua/plugins/lang-web.lua
+
+
+{{ end }}
+
+.DS_Store
+**/.DS_Store

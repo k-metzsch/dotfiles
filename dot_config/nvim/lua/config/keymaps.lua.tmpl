@@ -1,0 +1,5 @@
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   include "keymaps.lua_darwin" -}}
+{{- else if eq .chezmoi.os "linux" -}}
+{{-   include "keymaps.lua_linux" -}}
+{{- end -}}

@@ -1,9 +1,14 @@
+export PATH="$HOME/bin:$PATH"
+export USER="$(whoami)"
+export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
+export ZSH="$HOME/.oh-my-zsh"
+{{ if eq .chezmoi.os "darwin" }}
 export _JAVA_OPTIONS="--enable-native-access=ALL-UNNAMED"
 export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 export ANDROID_SDK_ROOT=$ANDROID_HOME
 export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
 export PATH="/usr/local/bin:$PATH"
-export PATH="$HOME/bin:$PATH"
 export PATH="$PATH":"$HOME/.pub-cache/bin"
-export USER="$(whoami)"
-. "$HOME/.cargo/env"
+{{ else if eq .chezmoi.os "linux" }}
+export PATH="$PATH:$HOME/.composer/vendor/bin"
+{{ end }}

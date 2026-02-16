@@ -1,0 +1,24 @@
+{
+  "title": "Right Command as Hyper button",
+  "rules": [
+    {
+      "description": "Right Command acts as Hyper when held, Right Command when tapped",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "right_command",
+            "modifiers": { "optional": ["any"] }
+          },
+          "to": [
+            {
+              "key_code": "left_shift",
+              "modifiers": ["left_command", "left_control", "left_option"]
+            }
+          ],
+          "to_if_alone": [{ "key_code": "right_command" }]
+        }
+      ]
+    }
+  ]
+}

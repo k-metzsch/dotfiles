@@ -1,7 +1,5 @@
 meh - t : open -na kitty
 
-meh - b : open -na firefox
-
 hyper - t : sh -c 'DIR=$(osascript -e "tell application \"Finder\" to set thePath to POSIX path of (target of Finder window 1 as alias)"); /Applications/Kitty.app/Contents/MacOS/kitty --working-directory "$DIR"'
 
 meh - a : if ! yabai -m query --spaces | grep -q '"index":1'; then yabai -m space --create; fi; yabai -m space --focus 1

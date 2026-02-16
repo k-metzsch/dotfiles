@@ -1,26 +1,9 @@
+---
 - hosts: localhost
   become: false
   gather_facts: yes
 
   tasks:
-    - name: Go Language server install
-      shell: go install golang.org/x/tools/gopls@latest
-
-    - name: Check if rustup is installed
-      shell: command -v rustup
-      register: rustup_installed
-      failed_when: false
-      changed_when: false
-
-    - name: Initialize Rust with Rustup (non-interactive, idempotent)
-      shell: rustup-init -y --no-modify-path
-      args:
-        creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
-      when: rustup_installed.rc != 0
-
-    - name: Setup laravel installer globally
-      shell: composer global require laravel/installer
-
     - name: Update Android SDK Manager
       shell: sdkmanager --update
 
