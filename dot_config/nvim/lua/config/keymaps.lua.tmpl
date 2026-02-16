@@ -96,12 +96,14 @@ end
 local wk = require("which-key")
 wk.add({
   { "<leader>d", group = "Debug", icon = "" },
+
   {{- if eq .chezmoi.os "darwin" -}}
   { "<leader>F", group = "Flutter", icon = "" },
   { "<leader>Fb", group = "Build", icon = "" },
   { "<leader>Fc", group = "Create", icon = "" },
   { "<leader>Fp", group = "Pub", icon = "" },
   { "<leader>Fl", group = "Log", icon = "" },
+
   {{- else if eq .chezmoi.os "linux" -}}
   { "<leader>L", group = "Laravel", icon = "" },
   { "<leader>Lh", group = "IDE-Helper", icon = "" },
@@ -110,6 +112,7 @@ wk.add({
   { "<leader>P", group = "Python", icon = "" },
   { "<leader>R", group = "Rust", icon = "" },
   { "<leader>G", group = "Go", icon = "" },
+
   {{- end -}}
 })
 
@@ -146,6 +149,7 @@ map("n", "<leader>du", require("dapui").toggle, "Debug: Toggle UI")
 map("n", "<leader>dt", require("dap").terminate, "Debug: Terminate")
 
 {{- if eq .chezmoi.os "linux" -}}
+
 -----------------------------------------------------------------------
 -- LARAVEL (<leader>L)
 -----------------------------------------------------------------------
@@ -495,9 +499,12 @@ end, "Run File")
 map("n", "<leader>Pm", function()
   bg_run_with_input("python3 -m", "Run module (python -m):")
 end, "Run Python Module")
+
 {{- end -}}
 
+
 {{- if eq .chezmoi.os "darwin" -}}
+
 -----------------------------------------------------------------------
 -- FLUTTER (<leader>F)
 -----------------------------------------------------------------------
@@ -647,4 +654,5 @@ map("n", "<leader>FV", function()
     flutter_make(choice.cmd, choice.label .. " name:", choice.extra)
   end)
 end, "Very Good CLI Create")
+
 {{- end -}}
