@@ -4,7 +4,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${0}}")" && pwd)"
 
 OS_NAME="$(uname -s)"
 
-echo "$SCRIPT_DIR/.bootstrap/macos/setup.sh"
+pwd
+
+ls
 
 if [ "$OS_NAME" = "Darwin" ]; then
 	if [ -x "$SCRIPT_DIR/.bootstrap/macos/setup.sh" ]; then
