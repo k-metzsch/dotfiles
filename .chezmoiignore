@@ -1,8 +1,8 @@
 {{ if ne .chezmoi.os "darwin" }}
 .config/nvim/lua/plugins/lang-flutter.lua
-.config/karabiner/*
-.config/skhd/*
-.config/yabai/*
+.config/karabiner
+.config/skhd
+.config/yabai
 
 {{ end }}
 
